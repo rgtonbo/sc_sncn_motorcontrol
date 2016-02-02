@@ -9,6 +9,8 @@
 #define ERROR 0
 #define SUCCESS 1
 
+#define MOTOR_CTLR_INTRFCE_CNT  4
+
 /**
  * @brief Type for the kind of winding of a BLDC motor.
  */
@@ -41,6 +43,8 @@ typedef struct {
 #include <watchdog_service.h>
 #include <hall_service.h>
 #include <qei_service.h>
+#include <biss_service.h>
+#include <ams_service.h>
 
 #include <mc_internal_constants.h>
 
@@ -154,11 +158,13 @@ interface MotorcontrolInterface{
  * @param i_motorcontrol[5] Array of communication interfaces to handle up to 5 different clients.
  */
 [[combinable]]
-void motorcontrol_service(FetDriverPorts &fet_driver_ports, MotorcontrolConfig &motorcontrol_config,
-                            chanend c_pwm_ctrl,
-                            interface HallInterface client ?i_hall,
-                            interface QEIInterface client ?i_qei,
-                            interface WatchdogInterface client i_watchdog,
-                            interface MotorcontrolInterface server i_motorcontrol[4]);
+ void motorcontrol_service(FetDriverPorts &fet_driver_ports, MotorcontrolConfig &motorcontrol_config,
+                             chanend c_pwm_ctrl,
+                             interface HallInterface client ?i_hall,
+                             interface QEIInterface client ?i_qei,
+                             interface BISSInterface client ?i_biss,
+                             interface AMSInterface client ?i_ams,
+                             interface WatchdogInterface client i_watchdog,
+                             interface MotorcontrolInterface server i_motorcontrol[MOTOR_CTLR_INTRFCE_CNT]);
 
 #endif

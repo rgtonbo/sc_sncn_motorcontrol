@@ -10,8 +10,6 @@
 #include <refclk.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <refclk.h>
-#include <stdio.h>
 #include <print.h>
 
 #include <mc_internal_constants.h>
@@ -27,7 +25,7 @@ int check_hall_config(HallConfig &hall_config){
 }
 
 [[combinable]]
-void hall_service(HallPorts & hall_ports, HallConfig & hall_config, interface HallInterface server i_hall[5])
+void hall_service(HallPorts & hall_ports, HallConfig & hall_config, interface HallInterface server i_hall[HALL_CTLR_INTRFCE_CNT])
 {
     //Set freq to 250MHz (always needed for velocity calculation)
     write_sswitch_reg(get_local_tile_id(), 8, 1); // (8) = REFDIV_REGNUM // 500MHz / ((1) + 1) = 250MHz
@@ -37,7 +35,7 @@ void hall_service(HallPorts & hall_ports, HallConfig & hall_config, interface Ha
         return;
     }
 
-    printf("*************************************\n    HALL SENSOR SERVER STARTING\n*************************************\n");
+    printstr(">>   SOMANET HALL SENSOR SERVICE STARTING...\n");
 
     #define defPeriodMax 1000000  //1000msec
     timer tx, tmr;
@@ -182,8 +180,9 @@ void hall_service(HallPorts & hall_ports, HallConfig & hall_config, interface Ha
                 out_status = init_state;
                 break;
 
-            case tmr when timerafter(ts + PULL_PERIOD_USEC * 250) :> ts: //12 usec 3000
-                switch (xreadings) {
+
+            case tmr when timerafter(ts + PULL_PERIOD_USEC * USEC_FAST) :> ts: //12 usec 3000
+                switch(xreadings) {
                     case 0:
                         hall_ports.p_hall :> new1;
                         new1 &= 0x07;

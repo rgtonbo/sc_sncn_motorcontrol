@@ -10,13 +10,13 @@
 #include <profile_control.h>
 
 void init_position_profiler(ProfilerConfig profile_position_config,
-                            interface PositionControlInterface client i_position_control,
-                            interface HallInterface client i_hall,
-                            interface QEIInterface client i_qei) {
+                            interface PositionControlInterface client i_position_control) {
 
     ControlConfig control_config = i_position_control.get_position_control_config();
-    HallConfig hall_config = i_hall.get_hall_config();
-    QEIConfig qei_config = i_qei.get_qei_config();
+    QEIConfig qei_config = i_position_control.get_qei_config();
+    HallConfig hall_config = i_position_control.get_hall_config();
+    BISSConfig biss_config = i_position_control.get_biss_config();
+    AMSConfig ams_config   = i_position_control.get_ams_config();
 
     if(profile_position_config.max_acceleration <= 0 ||
             profile_position_config.max_velocity <= 0){
@@ -26,7 +26,8 @@ void init_position_profiler(ProfilerConfig profile_position_config,
 
     init_position_profile_limits(profile_position_config.max_acceleration,
                                     profile_position_config.max_velocity,
-                                    qei_config, hall_config, control_config.feedback_sensor,
+                                    qei_config, hall_config, biss_config, ams_config,
+                                    control_config.feedback_sensor,
                                     profile_position_config.max_position,
                                     profile_position_config.min_position);
 
@@ -45,7 +46,6 @@ void set_profile_position(int target_position, int velocity, int acceleration, i
     int position_ramp;
 
     int actual_position = 0;
-
     int init_state = i_position_control.check_busy();
 
 
@@ -55,13 +55,14 @@ void set_profile_position(int target_position, int velocity, int acceleration, i
     }
 
     actual_position = i_position_control.get_position();
+
     steps = init_position_profile(target_position, actual_position, velocity, acceleration, deceleration);
+
     t :> time;
     for(i = 1; i < steps; i++)
     {
         position_ramp = position_profile_generate(i);
         i_position_control.set_position(position_ramp);
-        actual_position = i_position_control.get_position();
         t when timerafter(time + MSEC_STD) :> time;
     }
     t when timerafter(time + 30 * MSEC_STD) :> time;

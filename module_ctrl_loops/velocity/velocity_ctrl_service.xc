@@ -45,8 +45,10 @@ int max_speed_limit(int velocity, int max_speed) {
 void velocity_control_service(ControlConfig &velocity_control_config,
                        interface HallInterface client ?i_hall,
                        interface QEIInterface client ?i_qei,
+                       interface BISSInterface client ?i_biss,
+                       interface AMSInterface client ?i_ams,
                        interface MotorcontrolInterface client i_motorcontrol,
-                       interface VelocityControlInterface server i_velocity_control[3])
+                       interface VelocityControlInterface server i_velocity_control[VELOCITY_CTLR_INTRFCE_CNT])
 {
     /* Controller declarations */
     int actual_velocity = 0;
@@ -81,9 +83,11 @@ void velocity_control_service(ControlConfig &velocity_control_config,
     int activate = 0;
     int compute_flag = 0;
 
+
     int config_update_flag = 1;
 
-    printstrln("*************************************\n    VELOCITY CONTROLLER STARTING\n*************************************");
+
+    printstr(">>   SOMANET VELOCITY CONTROL SERVICE STARTING...\n");
 
     t :> ts;
 
@@ -134,8 +138,14 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                     config_update_flag = 0;
                 }
 
-                if (compute_flag == 1) {
-                    /* calculate actual velocity from hall/qei with filter*/
+
+            if (compute_flag == 1) {
+                /* calculate actual velocity from hall/qei with filter*/
+                if (velocity_control_config.feedback_sensor == BISS_SENSOR) {
+                    actual_velocity = i_biss.get_biss_velocity();
+                } else if (velocity_control_config.feedback_sensor == AMS_SENSOR) {
+                    actual_velocity = i_ams.get_ams_velocity();
+                } else {
                     if (velocity_control_config.feedback_sensor == HALL_SENSOR && init == 0) {
                         position = i_hall.get_hall_position_absolute(); //get_hall_position_absolute(c_hall);
                         if (position > 2049) {
@@ -175,8 +185,10 @@ void velocity_control_service(ControlConfig &velocity_control_config,
 
                     actual_velocity = filter(filter_buffer, index, filter_length, raw_speed);
                 }
+            }
 
-                if(activate == 1) {
+            if(activate == 1) {
+
 #ifdef Debug_velocity_ctrl
                     xscope_int(ACTUAL_VELOCITY, actual_velocity);
                     xscope_int(TARGET_VELOCITY, target_velocity);

@@ -9,7 +9,8 @@
 /**
 * @brief Definition for referring to the Encoder sensor.
 */
-#define QEI_SENSOR               2
+#define QEI_SENSOR              2
+#define QEI_CTLR_INTRFCE_CNT    5
 
 #define QEI_CHANGES_PER_TICK     4 //Quadrature encoder
 
@@ -172,6 +173,6 @@ interface QEIInterface{
  * @param i_qei[5] Array of communication interfaces to handle up to 5 different clients.
  */
 void qei_service(QEIPorts & qei_ports, QEIConfig qei_config,
-                interface QEIInterface server i_qei[5]);
+                interface QEIInterface server i_qei[QEI_CTLR_INTRFCE_CNT]);
 
 #endif

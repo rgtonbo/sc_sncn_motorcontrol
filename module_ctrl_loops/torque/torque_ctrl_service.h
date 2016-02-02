@@ -11,9 +11,12 @@
 #include <hall_service.h>
 #include <qei_service.h>
 #include <adc_service.h>
+#include <ams_service.h>
 
-#define FILTER_LENGTH_TORQUE 80
-#define FILTER_LENGTH_ADC 80
+#define FILTER_LENGTH_TORQUE    80
+#define FILTER_LENGTH_ADC       80
+
+#define TORQUE_CTLR_INTRFCE_CNT 2
 
 /**
  * @brief Minimum period for the Torque Control Loop is 100 us.
@@ -84,6 +87,22 @@ interface TorqueControlInterface{
     void set_torque_sensor(int sensor_used);
 
     /**
+     * @brief Setter for new configuration in the Hall Sensor Service.
+     *
+     * @param in_config New Hall Sensor Service configuration.
+     */
+    void set_hall_config(HallConfig in_config);
+
+    /**
+     * @brief Setter for new configuration in the Encoder Service.
+     *
+     * @param in_config New Encoder Service configuration.
+     */
+    void set_qei_config(QEIConfig in_config);
+
+    void set_ams_config(AMSConfig in_config);
+
+    /**
      * @brief Getter for the current state of the Service.
      *
      * @return 0 - not initialized.
@@ -123,12 +142,15 @@ int torque_limit(int torque, int max_torque_limit);
  * @param adc_if Communication interface to the ADC Service.
  * @param i_hall [[Nullable]] Communication interface to the Hall Sensor Service (if applicable).
  * @param i_qei [[Nullable]] Communication interface to the Encoder Service (if applicable).
+ * @param i_ams [[Nullable]] Communication interface to the AMS Service (if applicable).
  * @param i_motorcontrol Communication interface to the Motor Control Service.
  * @param Array of communication interfaces to handle up to 3 different clients.
  */
 void torque_control_service(ControlConfig &torque_ctrl_config,
                             interface ADCInterface client i_adc,
-                            interface HallInterface client i_hall,
+                            interface HallInterface client ?i_hall,
                             interface QEIInterface client ?i_qei,
+                            interface BISSInterface client ?i_biss,
+                            interface AMSInterface client ?i_ams,
                             interface MotorcontrolInterface client i_motorcontrol,
-                            interface TorqueControlInterface server i_torque_control[3]);
+                            interface TorqueControlInterface server i_torque_control[TORQUE_CTLR_INTRFCE_CNT]);

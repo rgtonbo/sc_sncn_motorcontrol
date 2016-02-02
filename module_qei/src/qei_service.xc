@@ -58,7 +58,7 @@ int check_qei_config(QEIConfig &qei_config)
 }
 
 #pragma unsafe arrays
-void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIInterface server i_qei[5])
+void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIInterface server i_qei[QEI_CTLR_INTRFCE_CNT])
 {
     //Set freq to 250MHz (always needed for velocity calculation)
     write_sswitch_reg(get_local_tile_id(), 8, 1); // (8) = REFDIV_REGNUM // 500MHz / ((1) + 1) = 250MHz
@@ -69,7 +69,7 @@ void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIIn
         return;
     }
 
-    printstr("*************************************\n    QEI SENSOR SERVER STARTING\n*************************************\n");
+    printstr(">>   SOMANET ENCODER SENSOR SERVICE STARTING...\n");
 
     //Check if we are using a dc board with configurable qei port
     if (!isnull(encoder_ports.p_qei_config)) {
@@ -302,7 +302,9 @@ void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIIn
                 vel_previous_position = count;
                 vel_old_difference = difference_velocity;
 
-                velocity = (difference_velocity * 60000) / config_qei_changes_per_turn;
+
+                velocity = (difference_velocity*60000)/(config_qei_changes_per_turn); // FIXME Magic numbers. Magic numbers everywhere...
+
 
                 break;
 

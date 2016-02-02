@@ -9,6 +9,8 @@
 #include <motorcontrol_service.h>
 #include <control_loops_common.h>
 
+#define POSITION_CTLR_INTRFCE_CNT   2
+
 /**
  * @brief Interface type to communicate with the Position Control Service.
  */
@@ -67,6 +69,55 @@ interface PositionControlInterface{
     void set_position_sensor(int sensor_used);
 
     /**
+     * @brief Getter for current configuration used by the Hall Sensor Service.
+     *
+     * @return Current Hall Sensor Service configuration.
+     */
+    HallConfig get_hall_config();
+
+    /**
+     * @brief Setter for new configuration in the Hall Sensor Service.
+     *
+     * @param in_config New Hall Sensor Service configuration.
+     */
+    void set_hall_config(HallConfig hall_config);
+
+    /**
+     * @brief Getter for current configuration used by the Encoder Service.
+     *
+     * @return Current Encoder Service configuration.
+     */
+    QEIConfig get_qei_config();
+
+    /**
+     * @brief Setter for new configuration in the Encoder Service.
+     *
+     * @param in_config New Encoder Service configuration.
+     */
+    void set_qei_config(QEIConfig in_config);
+
+    /**
+     * @brief Getter for current configuration used by the BiSS Service.
+     *
+     * @return Current BiSS Service configuration.
+     */
+    BISSConfig get_biss_config();
+
+    /**
+     * @brief Getter for current configuration used by the AMS Absolute Sensor Service.
+     *
+     * @return Current AMS Service configuration.
+     */
+    AMSConfig get_ams_config();
+
+    /**
+     * @brief Setter for new configuration in the Encoder Service.
+     *
+     * @param in_config New Encoder Service configuration.
+     */
+    //void set_ams_config(AMSConfig in_config);
+
+    /**
      * @brief Getter for the current state of the Service.
      *
      * @return 0 - not initialized.
@@ -105,11 +156,14 @@ int position_limit(int position, int max_position_limit, int min_position_limit)
  * @param position_ctrl_config Configuration for the Position Control Service.
  * @param i_hall [[Nullable]] Communication interface to the Hall Sensor Service (if applicable).
  * @param i_qei [[Nullable]] Communication interface to the Encoder Service (if applicable).
+ * @param i_ams [[Nullable]] Communication interface to the AMS Service (if applicable).
  * @param i_motorcontrol Communication interface to the Motor Control Service.
  * @param i_position_control[3] Array of communication interfaces to handle up to 3 different clients.
  */
 void position_control_service(ControlConfig & position_ctrl_config,
                     interface HallInterface client ?i_hall,
                     interface QEIInterface client ?i_qei,
+                    interface BISSInterface client ?i_biss,
+                    interface AMSInterface client ?i_ams,
                     interface MotorcontrolInterface client i_motorcontrol,
-                    interface PositionControlInterface server i_position_control[3]);
+                    interface PositionControlInterface server i_position_control[POSITION_CTLR_INTRFCE_CNT]);

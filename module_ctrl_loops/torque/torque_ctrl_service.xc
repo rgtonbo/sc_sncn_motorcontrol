@@ -144,11 +144,14 @@ void current_filter(interface ADCInterface client adc_if, chanend c_current)
 }
 
 void torque_ctrl_loop(ControlConfig &torque_control_config,
-                      chanend c_current,
-                      interface HallInterface client i_hall,
-                      interface QEIInterface client i_qei,
-                      interface MotorcontrolInterface client i_motorcontrol,
-                      interface TorqueControlInterface server i_torque_control[3])
+        HallConfig &hall_config, QEIConfig &qei_params, BISSConfig &biss_config, AMSConfig &ams_config,
+          chanend c_current,
+          interface MotorcontrolInterface client i_motorcontrol,
+          interface HallInterface client ?i_hall,
+          interface QEIInterface client ?i_qei,
+          interface BISSInterface client ?i_biss,
+          interface AMSInterface client ?i_ams,
+          interface TorqueControlInterface server i_torque_control[TORQUE_CTLR_INTRFCE_CNT])
 {
     int actual_speed = 0;
     int command;
@@ -177,6 +180,7 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
     int buffer_index = 0;
     int filter_length_variance;
 
+
     int actual_torque = 0;
     int target_torque = 0;
     int absolute_torque = 0;
@@ -190,6 +194,8 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
     int torque_control_output_limit = 0;
     int error_torque_integral_limit = 0;
 
+    int init_state = INIT_BUSY;
+
     int compute_flag = 0;
     int qei_counts_per_hall;
 
@@ -202,7 +208,22 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
 
     int config_update_flag = 1;
 
-    printstr("*************************************\n    TORQUE CONTROLLER STARTING\n*************************************\n");
+
+    printstr(">>   SOMANET TORQUE CONTROL SERVICE STARTING...\n");
+
+    if(torque_control_config.feedback_sensor == BISS_SENSOR)
+        filter_length_variance = filter_length/biss_config.pole_pairs;
+    else if (torque_control_config.feedback_sensor == AMS_SENSOR)
+        filter_length_variance = filter_length/ams_config.pole_pairs;
+    else
+        filter_length_variance = filter_length/hall_config.pole_pairs;
+
+    if (filter_length_variance < 10)
+        filter_length_variance = 10;
+
+
+    if (torque_control_config.feedback_sensor == QEI_SENSOR)
+        qei_counts_per_hall= (qei_params.ticks_resolution*4)/ hall_config.pole_pairs;
 
     t :> time;
 
@@ -262,18 +283,21 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                     config_update_flag = 0;
                 }
 
-                if (compute_flag == 1) {
-                    if (torque_control_config.feedback_sensor == HALL_SENSOR) {
-                        angle = (i_hall.get_hall_position() >> 2) & 0x3ff; //  << 10 ) >> 12 //get_hall_position(c_hall)
-                        //xscope_probe_data(0, angle);
-                        actual_speed = i_hall.get_hall_velocity();// get_hall_velocity(c_hall);
-                    } else if (torque_control_config.feedback_sensor >= QEI_SENSOR) {
-                        { angle, offset_fw_flag, offset_bw_flag } = i_qei.get_qei_sync_position();
-                        angle = ((angle << 10) / qei_counts_per_hall ) & 0x3ff;
-                        //{qei_count_velocity, qei_direction_velocity} = get_qei_position_absolute(c_qei);
-                        actual_speed = i_qei.get_qei_velocity(); // calculate_qei_velocity(qei_count_velocity,qei_config, qei_velocity_params);
-                        //get_qei_velocity(c_qei, qei_config, qei_velocity_params);
-                    }
+            if (compute_flag == 1) {
+                if (torque_control_config.feedback_sensor == HALL_SENSOR && !isnull(i_hall)) {
+                    angle = (i_hall.get_hall_position() >> 2) & 0x3ff; //  << 10 ) >> 12 /
+                    actual_speed = i_hall.get_hall_velocity();
+                } else if (torque_control_config.feedback_sensor == QEI_SENSOR && !isnull(i_qei)) {
+                    { angle, offset_fw_flag, offset_bw_flag } = i_qei.get_qei_sync_position();
+                    angle = ((angle <<10)/qei_counts_per_hall ) & 0x3ff;
+                    actual_speed = i_qei.get_qei_velocity();
+                } else if (torque_control_config.feedback_sensor == BISS_SENSOR && !isnull(i_biss)) {
+                    angle = i_biss.get_biss_angle() >> 2; //  << 10 ) >> 12 /
+                    actual_speed = i_biss.get_biss_velocity();
+                } else if (torque_control_config.feedback_sensor == AMS_SENSOR && !isnull(i_ams)) {
+                    angle = i_ams.get_ams_angle() >> 2; //  << 10 ) >> 12 /     // TODO I have also to divide through 4?
+                    actual_speed = i_ams.get_ams_velocity();
+                }
 
                     c_current <: 2;
                     c_current <: actual_speed;
@@ -323,6 +347,7 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                         iq_filtered /= filter_length_variance;
         */
                         actual_torque = abs(Iq); // round( sqrt( iq_filtered * iq_filtered + id_filtered * id_filtered ) );//
+
                     }
                 }
 
@@ -422,7 +447,8 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                 if (torque_control_output >= 0) {
                     out_torque = actual_torque;
                 } else {
-                    out_torque = 0 - actual_torque;
+
+                    out_torque = -actual_torque;
                 }
                 //out_torque *= hall_config.sensor_polarity; //it seems like the polarity is needed here.
 
@@ -444,8 +470,19 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                 out_config = torque_control_config;
                 break;
 
-            case i_torque_control[int i].set_torque_sensor(int in_sensor):
+            case i_torque_control[int i].set_qei_config(QEIConfig in_config):
 
+               qei_params.index_type = in_config.index_type;
+               qei_params.ticks_resolution = in_config.ticks_resolution;
+
+               qei_counts_per_hall = qei_params.ticks_resolution * 4 / hall_config.pole_pairs;
+               filter_length_variance =  filter_length/hall_config.pole_pairs;
+               if (filter_length_variance < 10) {
+                   filter_length_variance = 10;
+               }
+               break;
+
+            case i_torque_control[int i].set_torque_sensor(int in_sensor):
                 torque_control_config.feedback_sensor = in_sensor;
                 target_torque = actual_torque;
                 if (!compute_flag) {
@@ -454,13 +491,44 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                 config_update_flag = 1;
                 break;
 
-            case i_torque_control[int i].check_busy() -> int out_state:
 
+        case i_torque_control[int i].set_ams_config(AMSConfig in_config):
+
+            ams_config.pole_pairs = in_config.pole_pairs;
+
+            filter_length_variance =  filter_length/ams_config.pole_pairs;
+            if (filter_length_variance < 10) {
+                filter_length_variance = 10;
+            }
+
+                break;
+
+        case i_torque_control[int i].check_busy() -> int out_state:
                 out_state = activate;
                 break;
 
-            case i_torque_control[int i].enable_torque_ctrl():
+            if (torque_control_config.feedback_sensor == QEI_SENSOR) {
+                qei_counts_per_hall = qei_params.ticks_resolution * 4 / hall_config.pole_pairs;
+                filter_length_variance =  filter_length/hall_config.pole_pairs;
+            } else if (torque_control_config.feedback_sensor == BISS_SENSOR) {
+                filter_length_variance =  filter_length/biss_config.pole_pairs;
+            } else if (torque_control_config.feedback_sensor == AMS_SENSOR) {
+                filter_length_variance =  filter_length/ams_config.pole_pairs;
+            } else
+                filter_length_variance =  filter_length/hall_config.pole_pairs;
 
+            if (filter_length_variance < 10)
+                filter_length_variance = 10;
+
+            target_torque = actual_torque;
+
+            if (!compute_flag)
+            {
+                compute_flag = 1;
+            }
+            break;
+
+        case i_torque_control[int i].enable_torque_ctrl():
                 activate = 1;
                 int init_state = i_motorcontrol.check_busy(); //__check_commutation_init(c_commutation);
                 if (init_state == INIT) {
@@ -502,21 +570,52 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                 //wait_ms(30, 1, tc);
                 break;
 
+            case i_torque_control[int i].set_hall_config(HallConfig in_config):
+                    hall_config = in_config;
+                    break;
+
         }
     }
 }
 
 void torque_control_service(ControlConfig &torque_control_config,
-                            interface ADCInterface client adc_if,
-                            interface HallInterface client i_hall,
-                            interface QEIInterface client ?i_qei,
-                            interface MotorcontrolInterface client i_motorcontrol,
-                            interface TorqueControlInterface server i_torque_control[3])
+                    interface ADCInterface client adc_if,
+                    interface HallInterface client ?i_hall,
+                    interface QEIInterface client ?i_qei,
+                    interface BISSInterface client ?i_biss,
+                    interface AMSInterface client ?i_ams,
+                    interface MotorcontrolInterface client i_motorcontrol,
+                    interface TorqueControlInterface server i_torque_control[TORQUE_CTLR_INTRFCE_CNT])
 {
     chan c_current;
 
+    HallConfig hall_config;
+    if(!isnull(i_hall)){
+        hall_config = i_hall.get_hall_config();
+    }
+
+    QEIConfig qei_config;
+    if(!isnull(i_qei)){
+        qei_config = i_qei.get_qei_config();
+    }
+
+    BISSConfig biss_config;
+    if(!isnull(i_biss)){
+        biss_config = i_biss.get_biss_config();
+    }
+
+    AMSConfig ams_config;
+    if(!isnull(i_ams)){
+        ams_config = i_ams.get_ams_config();
+    }
+
+    if(isnull(hall_config) && isnull(qei_config) && isnull(biss_config) && isnull(ams_config)){
+        printstrln("Torque Control Loop ERROR: Wrong position feedback sensor or interface not provided");
+    }
+
     par {
         current_filter(adc_if, c_current);
-        torque_ctrl_loop(torque_control_config, c_current, i_hall, i_qei, i_motorcontrol, i_torque_control);
+        torque_ctrl_loop(torque_control_config, hall_config, qei_config, biss_config, ams_config,
+                c_current, i_motorcontrol, i_hall, i_qei, i_biss, i_ams, i_torque_control);
     }
 }

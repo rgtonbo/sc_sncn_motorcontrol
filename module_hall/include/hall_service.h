@@ -9,6 +9,7 @@
 * @brief Definition for referring to the Hall sensor.
 */
 #define HALL_SENSOR             1
+#define HALL_CTLR_INTRFCE_CNT   5
 
 #define ERROR                   0
 #define SUCCESS                 1
@@ -135,6 +136,6 @@ interface HallInterface {
  */
 [[combinable]]
 void hall_service(HallPorts & hall_ports, HallConfig & hall_config,
-                    interface HallInterface server i_hall[5]);
+                    interface HallInterface server i_hall[HALL_CTLR_INTRFCE_CNT]);
 
 #endif

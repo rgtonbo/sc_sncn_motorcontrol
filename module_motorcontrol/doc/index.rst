@@ -1,5 +1,7 @@
+.. _module_motorcontrol:
+
 ==================================
-SOMANET BLDC Motor Control Module
+SOMANET Motor Control Module
 ==================================
 
 .. contents:: In this document
@@ -17,32 +19,34 @@ allocated will be automatically changed to **250MHz**.
 The Motorcontrol Service should always run over an **IFM tile** so it can access the ports to
 your SOMANET IFM device.
 
+.. cssclass:: github
+
+  `See Module on Public Repository <https://github.com/synapticon/sc_sncn_motorcontrol/tree/master/module_motorcontrol>`_
+
 .. figure:: images/core-diagram-commutation.png
    :width: 60%
-
-   Custom control application core diagram
 
 .. _commutation_programming_label:
 
 How to use
 ===========
 
-.. important:: We assume that you are using **SOMANET Base** and your app includes the required **board support** files for your SOMANET device.
+.. important:: We assume that you are using :ref:`SOMANET Base <somanet_base>` and your app includes the required **board support** files for your SOMANET device.
           
-.. note:: You might find useful the **BLDC/Brushed DC Motor Control Demo** example apps, which illustrate the use of this module. 
+.. seealso:: You might find useful the :ref:`BLDC DC Motor Control Demo <bldc_motor_drive_demo>` and :ref:`Brushed DC Motor Control Demo <brushed_dc_drive_demo>` example apps, which illustrate the use of this module. 
 
-1. First, add all the **SOMANET Motor Control Library** modules to your app Makefile.
+1. First, add all the :ref:`SOMANET Motor Control <somanet_motor_control>` modules to your app Makefile.
 
-::
+    ::
 
- USED_MODULES = module_motorcontrol etc etc
+        USED_MODULES = module_motorcontrol module_pwm_symmetrical module_adc module_ctrl_loops module_hall module_misc module_profile module_qei module_watchdog module_board-support
 
-.. note:: Not all modules will be required, but when using a library it is recommended to include always all the contained modules. 
+    .. note:: Not all modules will be required, but when using a library it is recommended to include always all the contained modules. 
           This will help solving internal dependancy issues.
 
 2. Properly instanciate **PWM**, **Hall** and **Watchdog** Services.
 
-3. Include the Service header in your app. 
+3. Include the Motor Control Service header **motorcontrol_service.h** in your app. 
 
 4. Instanciate the ports where the Service will be accessing the Fet Driver signals. 
 
@@ -52,7 +56,7 @@ How to use
 
 7. At whichever other core, now you can perform calls to the Motorcontrol Service through the interfaces connected to it.
 
-.. code-block:: C
+    .. code-block:: C
 
         #include <CORE_C22-rev-a.bsp>   //Board Support file for SOMANET Core C22 device 
         #include <IFM_DC100-rev-b.bsp>  //Board Support file for SOMANET IFM DC100 device 
@@ -71,7 +75,6 @@ How to use
         int main(void) {
 
             chan c_pwm_ctrl; 
-
             interface WatchdogInterface i_watchdog[2];
             interface HallInterface i_hall[5];
             interface MotorcontrolInterface i_motorcontrol[5]; // 5
@@ -80,7 +83,6 @@ How to use
             {
 
                 on tile[APP_TILE]: i_motorcontrol[0].set_voltage(100); // 7
-
 
                 on tile[IFM_TILE]:
                 {
@@ -98,16 +100,16 @@ How to use
                         }
 
                         {
-                            MotorcontrolConfig motorcontrol_config; // 6
+                            MotorcontrolConfig motorcontrol_config; 
                             motorcontrol_config.motor_type = BLDC_MOTOR;
                             motorcontrol_config.commutation_sensor = HALL_SENSOR;
-                            motorcontrol_config.bldc_winding_type = BLDC_WINDING_TYPE;
+                            motorcontrol_config.bldc_winding_type = STAR_WINDING;
                             motorcontrol_config.hall_offset[0] =  0;
                             motorcontrol_config.hall_offset[1] = 0;
-                            motorcontrol_config.commutation_loop_period = 40;
+                            motorcontrol_config.commutation_loop_period = 60;
 
                             motorcontrol_service(fet_driver_ports, motorcontrol_config,
-                                                    c_pwm_ctrl, i_hall[0], null, i_watchdog[0], i_motorcontrol);
+                                            c_pwm_ctrl, i_hall[0], null, i_watchdog[0], i_motorcontrol); // 6
                         }
                     }
                 }
