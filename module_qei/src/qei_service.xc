@@ -69,7 +69,7 @@ void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIIn
         return;
     }
 
-    printstr(">>   SOMANET ENCODER SENSOR SERVICE STARTING...\n");
+    printstr(">>   SOMANET QEI SENSOR SERVICE STARTING...\n");
 
     //Check if we are using a dc board with configurable qei port
     if (!isnull(encoder_ports.p_qei_config)) {
@@ -279,8 +279,7 @@ void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIIn
                 status = 1;
 
                 notification = MOTCTRL_NTF_CONFIG_CHANGED;
-                // TODO: Use a constant for the number of interfaces
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < QEI_CTLR_INTRFCE_CNT; i++) {
                     i_qei[i].notification();
                 }
                 break;

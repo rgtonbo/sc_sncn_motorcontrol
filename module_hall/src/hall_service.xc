@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <print.h>
-
 #include <mc_internal_constants.h>
 
 int check_hall_config(HallConfig &hall_config){
@@ -169,8 +168,7 @@ void hall_service(HallPorts & hall_ports, HallConfig & hall_config, interface Ha
                 status = 1;
 
                 notification = MOTCTRL_NTF_CONFIG_CHANGED;
-                // TODO: Use a constant for the number of interfaces
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < HALL_CTLR_INTRFCE_CNT; i++) {
                     i_hall[i].notification();
                 }
                 break;

@@ -13,7 +13,7 @@
 #include <spi_master.h>
 
 #define AMS_SENSOR  3
-#define AMS_CTLR_INTRFCE_CNT      5
+#define AMS_CTLR_INTRFCE_CNT      4
 
 #define ERROR       0
 #define SUCCESS     1
@@ -157,6 +157,21 @@ typedef struct
 
 interface AMSInterface
 {
+    /**
+     * @brief Notifies the interested parties that a new notification
+     * is available.
+     */
+    [[notification]]
+    slave void notification();
+
+    /**
+     * @brief Provides the type of notification currently available.
+     *
+     * @return type of the notification
+     */
+    [[clears_notification]]
+    int get_notification();
+
     int get_ams_angle(void);
 
     int get_ams_position(void);

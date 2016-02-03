@@ -38,8 +38,8 @@ void motorcontrol_service(FetDriverPorts &fet_driver_ports, MotorcontrolConfig &
                             chanend c_pwm_ctrl,
                             interface HallInterface client ?i_hall,
                             interface QEIInterface client ?i_qei,
-                            interface BISSInterface client ?i_biss,
                             interface AMSInterface client ?i_ams,
+                            interface BISSInterface client ?i_biss,
                             interface WatchdogInterface client i_watchdog,
                             interface MotorcontrolInterface server i_motorcontrol[MOTOR_CTLR_INTRFCE_CNT])
 {

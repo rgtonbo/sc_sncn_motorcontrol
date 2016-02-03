@@ -120,11 +120,11 @@ int max_speed_limit(int velocity, int max_speed);
  * @param i_motorcontrol Communication interface to the Motor Control Service.
  * @param i_velocity_control[3] Array of communication interfaces to handle up to 3 different clients.
  */
-[[combinable]]
+//[[combinable]]
 void velocity_control_service(ControlConfig & velocity_ctrl_config,
                         interface HallInterface client ?i_hall,
                         interface QEIInterface client ?i_qei,
-                        interface BISSInterface client ?i_biss,
                         interface AMSInterface client ?i_ams,
+                        interface BISSInterface client ?i_biss,
                         interface MotorcontrolInterface client i_motorcontrol,
                         interface VelocityControlInterface server i_velocity_control[VELOCITY_CTLR_INTRFCE_CNT]);

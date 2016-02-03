@@ -41,12 +41,12 @@ int max_speed_limit(int velocity, int max_speed) {
     return velocity;
 }
 
-[[combinable]]
+//[[combinable]]
 void velocity_control_service(ControlConfig &velocity_control_config,
                        interface HallInterface client ?i_hall,
                        interface QEIInterface client ?i_qei,
-                       interface BISSInterface client ?i_biss,
                        interface AMSInterface client ?i_ams,
+                       interface BISSInterface client ?i_biss,
                        interface MotorcontrolInterface client i_motorcontrol,
                        interface VelocityControlInterface server i_velocity_control[VELOCITY_CTLR_INTRFCE_CNT])
 {
@@ -83,9 +83,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
     int activate = 0;
     int compute_flag = 0;
 
-
     int config_update_flag = 1;
-
 
     printstr(">>   SOMANET VELOCITY CONTROL SERVICE STARTING...\n");
 
@@ -119,13 +117,23 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                             crossover = INT_MAX - INT_MAX/10;
                             //hall_crossover = hall_config.max_ticks - hall_config.max_ticks/10;
                         }
-                    } else if (velocity_control_config.feedback_sensor >= QEI_SENSOR) {
+                    } else if (velocity_control_config.feedback_sensor == QEI_SENSOR) {
                         if (isnull(i_qei)) {
                             printstrln("Velocity Control Loop ERROR: Interface for QEI Service not provided");
                         } else {
                             QEIConfig qei_config = i_qei.get_qei_config();
                             speed_factor = (qei_config.ticks_resolution * QEI_CHANGES_PER_TICK ) * velocity_control_config.control_loop_period / 1000;       // variable qei_real_max
                             crossover = (qei_config.ticks_resolution * QEI_CHANGES_PER_TICK ) - (qei_config.ticks_resolution * QEI_CHANGES_PER_TICK ) / 10;
+                        }
+                    } else if (velocity_control_config.feedback_sensor >= AMS_SENSOR)
+                    {
+                        if (isnull(i_ams)) {
+                            printstrln("Velocity Control Loop ERROR: Interface for AMS Service not provided");
+                        } else {
+                            AMSConfig ams_config = i_ams.get_ams_config();
+                            // TODO Is the calculation right? I have no clue what speed_factor is doing.
+                            speed_factor = ams_config.sensor_resolution * velocity_control_config.control_loop_period / 1000;       // variable qei_real_max
+                            crossover = ams_config.sensor_resolution - (ams_config.sensor_resolution / 10);
                         }
                     }
 
@@ -146,31 +154,46 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                 } else if (velocity_control_config.feedback_sensor == AMS_SENSOR) {
                     actual_velocity = i_ams.get_ams_velocity();
                 } else {
-                    if (velocity_control_config.feedback_sensor == HALL_SENSOR && init == 0) {
-                        position = i_hall.get_hall_position_absolute(); //get_hall_position_absolute(c_hall);
-                        if (position > 2049) {
-                            init = 1;
-                            previous_position = 2049;
-                        } else if (position < -2049) {
-                            init = 1;
-                            previous_position = -2049;
-                        }
-                        raw_speed = 0;
-                        //target_velocity = 0;
-                    } else {
-                        if (velocity_control_config.feedback_sensor == HALL_SENSOR) {
+                    if (velocity_control_config.feedback_sensor == HALL_SENSOR) {
+                        if (init == 0) {
                             position = i_hall.get_hall_position_absolute();
-                        } else if (velocity_control_config.feedback_sensor >= QEI_SENSOR) {
-                            position = i_qei.get_qei_position_absolute();
+                            if (position > 2049) {
+                                init = 1;
+                                previous_position = 2049;
+                            } else if (position < -2049) {
+                                init = 1;
+                                previous_position = -2049;
+                            }
+                            raw_speed = 0;
+                            //target_velocity = 0;
+                        } else if (init == 1) {
+                            position = i_hall.get_hall_position_absolute();
+                            difference = position - previous_position;
+                            if (difference > crossover) {
+                                difference = old_difference;
+                            } else if (difference < -crossover) {
+                                difference = old_difference;
+                            }
+                            raw_speed = (difference*rpm_constant)/speed_factor;
+#ifdef Debug_velocity_ctrl
+                            //xscope_int(RAW_SPEED, raw_speed);
+#endif
+                            previous_position = position;
+                            old_difference = difference;
                         }
-
+                    } else if (velocity_control_config.feedback_sensor == QEI_SENSOR) {
+                        position = i_qei.get_qei_position_absolute();
                         difference = position - previous_position;
 
-                        if (difference < -crossover || difference > crossover) {
+                        if (difference > crossover) {
                             difference = old_difference;
                         }
 
-                        raw_speed = (difference * rpm_constant) / speed_factor;
+                        if (difference < -crossover) {
+                            difference = old_difference;
+                        }
+
+                        raw_speed = (difference*rpm_constant)/speed_factor;
 
 #ifdef Debug_velocity_ctrl
                         //xscope_int(RAW_SPEED, raw_speed);
@@ -238,6 +261,17 @@ void velocity_control_service(ControlConfig &velocity_control_config,
             case i_qei.notification():
 
                 switch (i_qei.get_notification()) {
+                    case MOTCTRL_NTF_CONFIG_CHANGED:
+                        config_update_flag = 1;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+
+            case i_ams.notification():
+
+                switch (i_ams.get_notification()) {
                     case MOTCTRL_NTF_CONFIG_CHANGED:
                         config_update_flag = 1;
                         break;

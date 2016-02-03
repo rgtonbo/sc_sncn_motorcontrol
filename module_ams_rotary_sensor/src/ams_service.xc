@@ -8,6 +8,7 @@
 #include <xs1.h>
 #include <refclk.h>
 #include <ams_service.h>
+#include <mc_internal_constants.h>
 
 static char rotarySensorInitialized = 0;
 
@@ -506,6 +507,8 @@ void ams_service(AMSPorts &ams_ports, AMSConfig config, server interface AMSInte
 
     printstr(">>   SOMANET AMS SENSOR SERVICE STARTING...\n");
 
+
+
     int n_pole_pairs = config.pole_pairs;
     int segm_resolution = config.sensor_resolution/n_pole_pairs;
     float norm_factor = segm_resolution/4096.0;
@@ -522,6 +525,9 @@ void ams_service(AMSPorts &ams_ports, AMSConfig config, server interface AMSInte
 
     timer t_read_sensor;
     unsigned int ts_read_sensor;
+
+    int notification = MOTCTRL_NTF_EMPTY;
+    int status = 0;
 
     initRotarySensor(ams_ports, config);
 
@@ -567,8 +573,19 @@ void ams_service(AMSPorts &ams_ports, AMSConfig config, server interface AMSInte
                     out_config = config;
                     break;
 
+            case i_AMS[int i].get_notification() -> int out_notification:
+
+                out_notification = notification;
+                break;
+
             case i_AMS[int i].set_ams_config(AMSConfig in_config):
                     config = in_config;
+                    status = 1;
+
+                    notification = MOTCTRL_NTF_CONFIG_CHANGED;
+                    for (int i = 0; i < n; i++) {
+                        i_AMS[i].notification();
+                    }
                     break;
 
             case t_read_sensor when timerafter(ts_read_sensor + PULL_PERIOD_USEC * USEC_FAST) :> ts_read_sensor:
@@ -601,16 +618,22 @@ void ams_service(AMSPorts &ams_ports, AMSConfig config, server interface AMSInte
 
             case t_velocity when timerafter(ts_velocity + MSEC_FAST) :> ts_velocity:
 
-                  difference_velocity = pos_multiturn - vel_previous_position;
-                  //if ( (difference_velocity > qei_crossover_velocity) || (difference_velocity < -qei_crossover_velocity) )
-                  //    difference_velocity = vel_old_difference;
+                if (status == 1) {
+                    status = 0;
+                   // max_count_actual = qei_config.max_ticks;
+                    n_pole_pairs = config.pole_pairs;
+                    segm_resolution = config.sensor_resolution/n_pole_pairs;
+                }
+                difference_velocity = pos_multiturn - vel_previous_position;
+                //if ( (difference_velocity > qei_crossover_velocity) || (difference_velocity < -qei_crossover_velocity) )
+                //    difference_velocity = vel_old_difference;
 
-                  vel_previous_position = pos_multiturn;
-                  vel_old_difference = difference_velocity;
+                vel_previous_position = pos_multiturn;
+                vel_old_difference = difference_velocity;
 
-                  velocity = (difference_velocity*60000)/(config.sensor_resolution);
+                velocity = (difference_velocity*60000)/(config.sensor_resolution);
 
-                  break;
+                break;
         }
     }
 }
