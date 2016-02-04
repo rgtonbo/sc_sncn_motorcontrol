@@ -12,6 +12,7 @@
 #include <limits.h>
 #include <refclk.h>
 #include <print.h>
+#include <user_config.h>
 
 void init_velocity_control(interface VelocityControlInterface client i_velocity_control)
 {
@@ -41,7 +42,7 @@ int max_speed_limit(int velocity, int max_speed) {
     return velocity;
 }
 
-//[[combinable]]
+[[combinable]]
 void velocity_control_service(ControlConfig &velocity_control_config,
                        interface HallInterface client ?i_hall,
                        interface QEIInterface client ?i_qei,
@@ -257,7 +258,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                         break;
                 }
                 break;
-
+#if(MOTOR_FEEDBACK_SENSOR == QEI_SENSOR)
             case i_qei.notification():
 
                 switch (i_qei.get_notification()) {
@@ -268,7 +269,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                         break;
                 }
                 break;
-
+#elif (MOTOR_FEEDBACK_SENSOR == AMS_SENSOR)
             case i_ams.notification():
 
                 switch (i_ams.get_notification()) {
@@ -279,7 +280,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                         break;
                 }
                 break;
-
+#endif
             case i_motorcontrol.notification():
 
                 switch (i_motorcontrol.get_notification()) {

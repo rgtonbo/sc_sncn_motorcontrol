@@ -211,7 +211,9 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
 
     printstr(">>   SOMANET TORQUE CONTROL SERVICE STARTING...\n");
 
-    if(torque_control_config.feedback_sensor == BISS_SENSOR)
+    if (torque_control_config.feedback_sensor == QEI_SENSOR)
+        qei_counts_per_hall= (qei_params.ticks_resolution*4)/ hall_config.pole_pairs;
+    else if(torque_control_config.feedback_sensor == BISS_SENSOR)
         filter_length_variance = filter_length/biss_config.pole_pairs;
     else if (torque_control_config.feedback_sensor == AMS_SENSOR)
         filter_length_variance = filter_length/ams_config.pole_pairs;
@@ -220,10 +222,6 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
 
     if (filter_length_variance < 10)
         filter_length_variance = 10;
-
-
-    if (torque_control_config.feedback_sensor == QEI_SENSOR)
-        qei_counts_per_hall= (qei_params.ticks_resolution*4)/ hall_config.pole_pairs;
 
     t :> time;
 
@@ -245,17 +243,35 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                     }
 
                     // The Hall configuration must always be loaded because of qei_counts_per_hall computation
-                    if (isnull(i_hall)) {
-                        printstrln("Position Control Loop ERROR: Interface for Hall Service not provided");
-                    } else {
-                        hall_config = i_hall.get_hall_config();
+                    if (torque_control_config.feedback_sensor == HALL_SENSOR) {
+                        if (isnull(i_hall)) {
+                            printstrln("Torque Control Loop ERROR: Interface for Hall Service not provided");
+                        } else {
+                            hall_config = i_hall.get_hall_config();
+                        }
                     }
 
-                    if (torque_control_config.feedback_sensor >= QEI_SENSOR) {
+                    if (torque_control_config.feedback_sensor == QEI_SENSOR) {
                         if (isnull(i_qei)) {
-                            printstrln("Position Control Loop ERROR: Interface for QEI Service not provided");
+                            printstrln("Torque Control Loop ERROR: Interface for QEI Service not provided");
                         } else {
                             qei_config = i_qei.get_qei_config();
+                        }
+                    }
+
+                    if (torque_control_config.feedback_sensor == AMS_SENSOR) {
+                        if (isnull(i_ams)) {
+                          printstrln("Torque Control Loop ERROR: Interface for AMS Service not provided");
+                        } else {
+                          ams_config = i_ams.get_ams_config();
+                        }
+                    }
+
+                    if (torque_control_config.feedback_sensor == BISS_SENSOR) {
+                        if (isnull(i_biss)) {
+                          printstrln("Torque Control Loop ERROR: Interface for BISS Service not provided");
+                        } else {
+                          biss_config = i_biss.get_biss_config();
                         }
                     }
 
@@ -412,6 +428,7 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                 }
                 break;
 
+#if(MOTOR_FEEDBACK_SENSOR == QEI_SENSOR)
             case i_qei.notification():
 
                 switch (i_qei.get_notification()) {
@@ -422,6 +439,18 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                         break;
                 }
                 break;
+#elif (MOTOR_FEEDBACK_SENSOR == AMS_SENSOR)
+            case i_ams.notification():
+
+                switch (i_ams.get_notification()) {
+                    case MOTCTRL_NTF_CONFIG_CHANGED:
+                        config_update_flag = 1;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+#endif
 
             case i_motorcontrol.notification():
 

@@ -30,6 +30,7 @@ void init_position_control(interface PositionControlInterface client i_position_
             break;
         }
     }
+
 }
 
 int position_limit(int position, int max_position_limit, int min_position_limit)
@@ -77,34 +78,35 @@ void position_control_service(ControlConfig &position_control_config,
     BISSConfig biss_config;
     MotorcontrolConfig motorcontrol_config = i_motorcontrol.get_config();
 
+    /*
     if(position_control_config.feedback_sensor != HALL_SENSOR
            && position_control_config.feedback_sensor < QEI_SENSOR){
        position_control_config.feedback_sensor = motorcontrol_config.commutation_sensor;
-    }
+    }*/
 
     if(position_control_config.feedback_sensor == HALL_SENSOR){
         if(isnull(i_hall)){
-            printstrln("Position Control Loop ERROR: Interface for Hall Service not provided");
+           printstrln("Position Control Loop ERROR: Interface for Hall Service not provided");
         }else{
             hall_config = i_hall.get_hall_config();
         }
-    } else if(position_control_config.feedback_sensor == QEI_SENSOR) {
-        if(isnull(i_qei)){
-            printstrln("Position Control Loop ERROR: Interface for QEI Service not provided");
-        }else{
-            qei_config = i_qei.get_qei_config();
-        }
     } else if(position_control_config.feedback_sensor == BISS_SENSOR){
         if(isnull(i_biss)){
-            printstrln("Position Control Loop ERROR: Interface for BiSS Service not provided");
+           printstrln("Position Control Loop ERROR: Interface for BiSS Service not provided");
         } else {
             biss_config = i_biss.get_biss_config();
         }
     } else if(position_control_config.feedback_sensor == AMS_SENSOR){
         if(isnull(i_ams)){
-            printstrln("Position Control Loop ERROR: Interface for AMS Service not provided");
+           printstrln("Position Control Loop ERROR: Interface for AMS Service not provided");
         } else {
             ams_config = i_ams.get_ams_config();
+        }
+    } else if(position_control_config.feedback_sensor == QEI_SENSOR) {
+        if(isnull(i_qei)){
+           printstrln("Position Control Loop ERROR: Interface for QEI Service not provided");
+        }else{
+            qei_config = i_qei.get_qei_config();
         }
     }
 
@@ -239,6 +241,7 @@ void position_control_service(ControlConfig &position_control_config,
                 }
                 break;
 
+#if(MOTOR_FEEDBACK_SENSOR == QEI_SENSOR)
             case i_qei.notification():
 
                 switch (i_qei.get_notification()) {
@@ -249,6 +252,18 @@ void position_control_service(ControlConfig &position_control_config,
                         break;
                 }
                 break;
+#elif (MOTOR_FEEDBACK_SENSOR == AMS_SENSOR)
+            case i_ams.notification():
+
+                switch (i_ams.get_notification()) {
+                    case MOTCTRL_NTF_CONFIG_CHANGED:
+                        config_update_flag = 1;
+                        break;
+                    default:
+                        break;
+                }
+                break;
+#endif
 
             case i_motorcontrol.notification():
 

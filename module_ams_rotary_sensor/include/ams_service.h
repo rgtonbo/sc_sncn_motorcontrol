@@ -13,7 +13,7 @@
 #include <spi_master.h>
 
 #define AMS_SENSOR  3
-#define AMS_CTLR_INTRFCE_CNT      4
+#define AMS_CTLR_INTRFCE_CNT      5
 
 #define ERROR       0
 #define SUCCESS     1
