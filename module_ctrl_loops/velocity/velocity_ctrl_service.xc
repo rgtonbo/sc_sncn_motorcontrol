@@ -14,6 +14,10 @@
 #include <print.h>
 #include <stdlib.h>
 
+#include <xscope.h>
+
+//#define Debug_velocity_ctrl
+
 void init_velocity_control(interface VelocityControlInterface client i_velocity_control)
 {
     int ctrl_state;
@@ -84,6 +88,8 @@ void velocity_control_service(ControlConfig &velocity_control_config,
     int compute_flag = 0;
 
     int config_update_flag = 1;
+
+    int check_sensor = 1;
 
     printstr(">>   SOMANET VELOCITY CONTROL SERVICE STARTING...\n");
 
@@ -190,6 +196,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                          */
 
                         actual_velocity = filter(filter_buffer, index, filter_length, raw_speed);
+
                     }
                 }
 
@@ -220,6 +227,30 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                         velocity_control_out = velocity_control_out_limit;
                     } else if (velocity_control_out < -velocity_control_out_limit) {
                         velocity_control_out = -velocity_control_out_limit;
+                    }
+
+                    // LITTLE WORKAROUND -> integrate in QEI service?
+                    // Avoid motor turning, when no QEI sensor is connected
+                    if (check_sensor)
+                    {
+                        // Get status from sensor. Flag is set, when service has detected a sensor transition
+                        if (!i_qei.get_sensor_is_active())
+                            // Turn motor...
+                            i_motorcontrol.set_voltage(50);
+                            // ... and wait 10 ms
+                            delay_milliseconds(10);
+                        // Check, if transition was detected.
+                        // If not, exit task
+                        if (!i_qei.get_sensor_is_active())
+                        {
+                            printstr("Error: Sensor not connected\n");
+                            return;
+                        }
+                        else
+                        {
+                            check_sensor = 0;
+                        }
+                        i_motorcontrol.set_voltage(0);
                     }
 
                     i_motorcontrol.set_voltage(velocity_control_out); //set_commutation_sinusoidal(c_commutation, velocity_control_out);//velocity_control_out

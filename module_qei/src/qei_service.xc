@@ -113,7 +113,7 @@ void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIIn
 
     int qei_crossover_velocity = config_qei_changes_per_turn - config_qei_changes_per_turn / 10;
     int vel_previous_position = 0, vel_old_difference = 0;
-    int difference_velocity;
+    int difference_velocity = 0;
     int velocity = 0;
 
     int notification = MOTCTRL_NTF_EMPTY;
@@ -226,6 +226,10 @@ void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIIn
                 out_notification = notification;
                 break;
 
+            case i_qei[int i].get_sensor_is_active() -> int out_sensor_state:
+                out_sensor_state = !first;
+                break;
+
             case i_qei[int i].get_qei_position() -> {unsigned int out_count, unsigned int out_valid}:
 
                 out_count = count;
@@ -303,7 +307,6 @@ void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIIn
                 vel_old_difference = difference_velocity;
 
                 velocity = (difference_velocity * 60000) / config_qei_changes_per_turn;
-
                 break;
 
         }

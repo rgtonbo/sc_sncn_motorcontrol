@@ -79,6 +79,8 @@ typedef struct {
  */
 interface QEIInterface{
 
+    int get_sensor_is_active(void);
+
     /**
      * @brief Notifies the interested parties that a new notification
      * is available.
