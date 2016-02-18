@@ -79,8 +79,6 @@ typedef struct {
  */
 interface QEIInterface{
 
-    int get_sensor_is_active(void);
-
     /**
      * @brief Notifies the interested parties that a new notification
      * is available.
@@ -95,6 +93,15 @@ interface QEIInterface{
      */
     [[clears_notification]]
     int get_notification();
+
+
+    /**
+     * @brief Getter for sensor status.
+     *
+     * @return 1, if a transition was detected once at least -> Sensor is connected
+     *         0, if not.
+     */
+    int get_sensor_is_active(void);
 
     /**
      * @brief Getter for current position.

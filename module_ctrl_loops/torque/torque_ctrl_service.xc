@@ -226,6 +226,8 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
 
     int config_update_flag = 1;
 
+    int check_sensor = 1;
+
     printstr(">>   SOMANET TORQUE CONTROL SERVICE STARTING...\n");
 
     tc :> time;
@@ -262,6 +264,27 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                             printstrln("Torque Control Loop ERROR: Interface for QEI Service not provided");
                         } else {
                             qei_config = i_qei.get_qei_config();
+
+                            // Check if a QEI sensor is connected
+                            if (check_sensor) {
+                                // Get status from sensor. Flag is set, when QEI service has detected a sensor transition
+                                if (!i_qei.get_sensor_is_active())
+                                    // Turn motor...
+                                    i_motorcontrol.set_voltage(50);
+                                    // ... and wait 10 ms
+                                    delay_milliseconds(10);
+                                    i_motorcontrol.set_voltage(0);
+                                // Check, if transition was detected.
+                                // If not, exit task
+                                if (!i_qei.get_sensor_is_active()) {
+                                    printstr("Error: QEI Sensor not connected\n");
+                                    return;
+                                }
+                                else {
+                                    check_sensor = 0;
+                                }
+                            }
+
                         }
                     }
 

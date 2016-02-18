@@ -91,7 +91,7 @@ void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIIn
 
     int previous_position = 0;
     int count = 0;
-    int first = 1;
+    int first_call = 1;
     int const config_max_ticks = INT_MAX;//qei_config.max_ticks;
     int const config_min_ticks = INT_MIN;
     int difference = 0;
@@ -157,9 +157,9 @@ void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIIn
 
                         old_pins = new_pins & 0x3;
 
-                        if (first == 1) {
+                        if (first_call == 1) {
                             previous_position = position;
-                            first = 0;
+                            first_call = 0;
                         }
 
                         if (previous_position != position) {
@@ -227,7 +227,7 @@ void qei_service(QEIPorts & encoder_ports, QEIConfig qei_config, interface QEIIn
                 break;
 
             case i_qei[int i].get_sensor_is_active() -> int out_sensor_state:
-                out_sensor_state = !first;
+                out_sensor_state = !first_call;
                 break;
 
             case i_qei[int i].get_qei_position() -> {unsigned int out_count, unsigned int out_valid}:

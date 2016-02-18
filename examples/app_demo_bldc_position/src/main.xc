@@ -2,6 +2,7 @@
 #include <CORE_BOARD_REQUIRED>
 #include <IFM_BOARD_REQUIRED>
 
+
 /**
  * @file test_position-ctrl.xc
  * @brief Test illustrates usage of profile position control
@@ -99,8 +100,8 @@ int main(void)
                 actual_position = i_position_control[1].get_position();
                 target_position = i_position_control[1].get_target_position();
 
-                xscope_int(TARGET_POSITION, target_position/10); //Divided by 10 for better displaying
-                xscope_int(ACTUAL_POSITION, actual_position/10); //Divided by 10 for better displaying
+//                xscope_int(TARGET_POSITION, target_position/10); //Divided by 10 for better displaying
+//                xscope_int(ACTUAL_POSITION, actual_position/10); //Divided by 10 for better displaying
 
                 delay_milliseconds(10); /* 1 ms wait */
             }
