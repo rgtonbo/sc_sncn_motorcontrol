@@ -101,26 +101,6 @@ void position_control_service(ControlConfig &position_control_config,
                     if (position_control_config.feedback_sensor == HALL_SENSOR && !isnull(i_hall)) {
                         actual_position = i_hall.get_hall_position_absolute();
                     } else if (position_control_config.feedback_sensor == QEI_SENSOR && !isnull(i_qei)) {
-                         // Check if a QEI sensor is connected
-                         if (check_sensor) {
-                             // Get status from sensor. Flag is set, when QEI service has detected a sensor transition
-                             if (!i_qei.get_sensor_is_active())
-                                 // Turn motor...
-                                 i_motorcontrol.set_voltage(50);
-                                 // ... and wait 10 ms
-                                 delay_milliseconds(10);
-                                 i_motorcontrol.set_voltage(0);
-                             // Check, if transition was detected.
-                             // If not, exit task
-                             if (!i_qei.get_sensor_is_active()) {
-                                 printstr("Error: QEI Sensor not connected\n");
-                                 return;
-                             }
-                             else {
-                                 check_sensor = 0;
-                             }
-                         }
-
                         actual_position = i_qei.get_qei_position_absolute();
                     } else if (position_control_config.feedback_sensor == BISS_SENSOR && !isnull(i_biss)) {
                         { actual_position, void, void } = i_biss.get_biss_position();
@@ -194,6 +174,25 @@ void position_control_service(ControlConfig &position_control_config,
 
                    // set_commutation_sinusoidal(c_commutation, position_control_out);
                     i_motorcontrol.set_voltage(position_control_out);
+
+                    // Check if a QEI sensor is connected
+                    if (check_sensor) {
+                        // Get status from sensor. Flag is set, when QEI service has detected a sensor transition
+                        if (!i_qei.get_sensor_is_active())
+                            // And wait 10 ms
+                            delay_milliseconds(10);
+                        // Check, if transition was detected.
+                        // If not, exit task
+                        if (!i_qei.get_sensor_is_active()) {
+                            // Turn off the motor
+                            i_motorcontrol.set_voltage(0);
+                            printstr("Error: QEI Sensor not connected\n");
+                            exit(-1);
+                        }
+                        else {
+                            check_sensor = 0;
+                        }
+                    }
 
 #ifdef DEBUG
                     xscope_int(ACTUAL_POSITION, actual_position);

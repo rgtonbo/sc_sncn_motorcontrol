@@ -90,6 +90,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
     int config_update_flag = 1;
 
     int check_sensor = 1;
+    int test_velocity = 0;
 
     printstr(">>   SOMANET VELOCITY CONTROL SERVICE STARTING...\n");
 
@@ -130,26 +131,6 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                             printstrln("Velocity Control Loop ERROR: Interface for QEI Service is not provided, but configured to be used");
                             exit(-1);
                         } else {
-                            // Check if a QEI sensor is connected
-                            if (check_sensor) {
-                                // Get status from sensor. Flag is set, when QEI service has detected a sensor transition
-                                if (!i_qei.get_sensor_is_active())
-                                    // Turn motor...
-                                    i_motorcontrol.set_voltage(50);
-                                    // ... and wait 10 ms
-                                    delay_milliseconds(10);
-                                    i_motorcontrol.set_voltage(0);
-                                // Check, if transition was detected.
-                                // If not, exit task
-                                if (!i_qei.get_sensor_is_active()) {
-                                    printstr("Error: QEI Sensor not connected\n");
-                                    return;
-                                }
-                                else {
-                                    check_sensor = 0;
-                                }
-                            }
-
                             QEIConfig qei_config = i_qei.get_qei_config();
                             speed_factor = (qei_config.ticks_resolution * QEI_CHANGES_PER_TICK ) * velocity_control_config.control_loop_period / 1000;       // variable qei_real_max
                             crossover = (qei_config.ticks_resolution * QEI_CHANGES_PER_TICK ) - (qei_config.ticks_resolution * QEI_CHANGES_PER_TICK ) / 10;
@@ -249,7 +230,27 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                         velocity_control_out = -velocity_control_out_limit;
                     }
 
+
                     i_motorcontrol.set_voltage(velocity_control_out); //set_commutation_sinusoidal(c_commutation, velocity_control_out);//velocity_control_out
+
+                    // Check if a QEI sensor is connected
+                    if (check_sensor) {
+                        // Get status from sensor. Flag is set, when QEI service has detected a sensor transition
+                        if (!i_qei.get_sensor_is_active())
+                            // And wait 10 ms
+                            delay_milliseconds(10);
+                        // Check, if transition was detected.
+                        // If not, exit task
+                        if (!i_qei.get_sensor_is_active()) {
+                            // Turn off the motor
+                            i_motorcontrol.set_voltage(0);
+                            printstr("Error: QEI Sensor not connected\n");
+                            exit(-1);
+                        }
+                        else {
+                            check_sensor = 0;
+                        }
+                    }
 
                     previous_error = error_velocity;
                 }
