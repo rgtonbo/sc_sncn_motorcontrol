@@ -75,10 +75,10 @@ typedef struct {
  */
 typedef struct {
     in buffered port:32 ?p32_data[2]; /**< [[Nullable]] Array of 32-bit buffered ADC data ports. */
-    clock ?xclk;  /**< [[Nullable]] Internal XMOS clock. */
     out port ?p1_serial_clk; /**< [[Nullable]] Port connecting to external ADC serial clock. */
     port ?p1_ready;   /**< [[Nullable]] Port used to as ready signal for p32_adc_data ports and ADC chip. */
     out port ?p4_mux; /**< [[Nullable]] 4-bit Port used to control multiplexor on ADC chip. */
+    clock ?clk;  /**< [[Nullable]] Internal XMOS clock. */
 } AD7265Ports;
 
 /**
@@ -93,7 +93,7 @@ typedef struct {
 /**
  * Enum type with the two supported ADCs.
  */
-enum ADCType {AD7949, AD7265};
+typedef enum {AD7949, AD7265} ADCType;
 
 /**
  * Structe type for the adc config.
