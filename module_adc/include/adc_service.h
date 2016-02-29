@@ -91,6 +91,18 @@ typedef struct {
 }CurrentSensorsConfig;
 
 /**
+ * Enum type with the two supported ADCs.
+ */
+enum ADCType {AD7949, AD7265};
+
+/**
+ * Structe type for the adc config.
+ */
+typedef struct {
+    ADCType adc_type; /**< ADC type (AD7949, AD7265) */
+} ADCConfig;
+
+/**
  * Structure type for ports and configuration used by the ADC Service .
  */
 typedef struct {
@@ -108,4 +120,4 @@ typedef struct {
  * @param c_trigger [[Nullable]] Channel communication to trigger sampling. If not provided, sampling takes place on request.
  * @param i_adc Array of communication interfaces to handle up to 5 different clients.
  */
-void adc_service(ADCPorts &adc_ports, chanend ?c_trigger, interface ADCInterface server i_adc[2]);
+void adc_service(ADCPorts &adc_ports, ADCConfig adc_config, chanend ?c_trigger, interface ADCInterface server i_adc[2]);

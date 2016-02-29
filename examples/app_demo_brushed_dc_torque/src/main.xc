@@ -118,7 +118,11 @@ int main(void)
                 watchdog_service(wd_ports, i_watchdog);
 
                 /* ADC Service */
-                adc_service(adc_ports, c_adctrig, i_adc);
+                {
+                    ADCConfig adc_config;
+                    adc_config.adc_type = SOMANET_IFM_ADC;
+                    adc_service(adc_ports, adc_config, c_adctrig, i_adc);
+                }
 
                 /* Quadrature encoder sensor Service */
                 {

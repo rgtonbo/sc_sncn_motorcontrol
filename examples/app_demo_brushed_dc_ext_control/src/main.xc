@@ -57,7 +57,11 @@ int main(void) {
             par
             {
                 /* ADC Loop */
-                adc_service(adc_ports, null, i_adc);
+                {
+                    ADCConfig adc_config;
+                    adc_config.adc_type = SOMANET_IFM_ADC;
+                    adc_service(adc_ports, adc_config, null, i_adc);
+                }
 
                 /* PWM Loop */
                 pwm_service(pwm_ports, c_pwm_ctrl);
