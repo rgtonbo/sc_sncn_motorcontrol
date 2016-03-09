@@ -136,8 +136,7 @@ void position_control_service(ControlConfig &position_control_config,
 
                         case BISS_SENSOR:
                             if(!isnull(i_biss)){
-                            {
-                                actual_position, void, void } = i_biss.get_biss_position();
+                                {actual_position, void, void } = i_biss.get_biss_position();
                             }
                             else{
                                 printstrln("position_ctrl_service: ERROR: BiSS interface is not provided but requested");
@@ -147,8 +146,7 @@ void position_control_service(ControlConfig &position_control_config,
 
                         case AMS_SENSOR:
                             if(!isnull(i_ams)){
-                            {
-                                actual_position, void } = i_ams.get_ams_position();
+                                {actual_position, void } = i_ams.get_ams_position();
                             }
                             else{
                                 printstrln("position_ctrl_service: ERROR: AMS interface is not provided but requested");
@@ -185,7 +183,6 @@ void position_control_service(ControlConfig &position_control_config,
                     } else if (position_control_out < -position_control_out_limit) {
                         position_control_out =  -position_control_out_limit;
                     }
-
 
                    // set_commutation_sinusoidal(c_commutation, position_control_out);
                     i_motorcontrol.set_voltage(position_control_out);

@@ -9,6 +9,9 @@
 #define ERROR 0
 #define SUCCESS 1
 
+#define COMMUTATION_MAX_RESOLUTION  4096
+#define COMMUTATION_MAX_RES_MASK    (COMMUTATION_MAX_RESOLUTION-1)
+
 /**
  * @brief Type for the kind of winding of a BLDC motor.
  */

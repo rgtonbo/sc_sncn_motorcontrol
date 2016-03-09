@@ -1,8 +1,8 @@
 /*
- * rotary_sensor_new.xc
+ *  ams_service.xc
  *
  *  Created on: 26.01.2016
- *      Author: hstroetgen
+ *      Author: Synapticon GmbH <support@synapticon.com>
  */
 
 #include <xs1.h>
@@ -12,6 +12,10 @@
 #include <timer.h>
 #include <print.h>
 #include <mc_internal_constants.h>
+
+#define COMMUTATION_MAX_RES_BIT     12
+#define COMMUTATION_MAX_RESOLUTION  (1 << COMMUTATION_MAX_RES_BIT)
+#define COMMUTATION_MAX_RES_MASK    (COMMUTATION_MAX_RESOLUTION-1)
 
 static char rotarySensorInitialized = 0;
 
@@ -501,9 +505,19 @@ int check_ams_config(AMSConfig &ams_config) {
         printstrln("Wrong AMS configuration: wrong timeout");
         return ERROR;
     }
-    if(ams_config.pole_pairs < 1){
-        printstrln("Wrong AMS configuration: wrong pole-pairs");
+    if(ams_config.velocity_loop == 0){
+        printstrln("Wrong AMS configuration: velocity loop too small (> 0)");
         return ERROR;
+    }
+    if(ams_config.pole_pairs < 1){
+        printstrln("Wrong AMS configuration: wrong pole-pairs. Pole-pairs must be greater than 0");
+        return ERROR;
+    }
+    if (ams_config.pole_pairs > 7){
+        printstrln("Warning: AMS sensor supports a maximum of 7 pole-pairs. With this configuration AMS Hall sensor is not usable for commutation.");
+    }
+    if(ams_config.max_ticks <= 20 && ams_config.max_ticks > 0){
+        printstrln("Warning: Maximum ticks of AMS sensor very small but not zero. Perhaps not initialized.");
     }
     return SUCCESS;
 }
@@ -516,11 +530,11 @@ int check_ams_config(AMSConfig &ams_config) {
 
     if(check_ams_config(ams_config) == ERROR){
         printstrln("Error while checking the AMS sensor configuration");
-        return;
+        exit(-1);
     }
     if (initRotarySensor(ams_ports,  ams_config) != SUCCESS_WRITING) {
         printstrln("Error with SPI AMS sensor");
-        return;
+        exit(-1);
     }
 
     printstr(">>   SOMANET AMS SENSOR SERVICE STARTING...\n");
@@ -547,6 +561,11 @@ int check_ams_config(AMSConfig &ams_config) {
 
     //first read
     last_position = readRotarySensorAngleWithoutCompensation(ams_ports);
+
+    if (ams_config.start_pos == AMS_START_POS_ACTUAL)
+        count = last_position;
+    // else count = 0
+
     t :> last_ams_read;
 
     //main loop
@@ -566,10 +585,10 @@ int check_ams_config(AMSConfig &ams_config) {
                     last_position = angle;
                 } else
                     angle = last_position;
-                if (ams_config.resolution_bits > 12)
-                    angle = (ams_config.pole_pairs * (angle >> (ams_config.resolution_bits-12)) ) & 4095;
+                if (ams_config.resolution_bits > COMMUTATION_MAX_RES_BIT)
+                    angle = (ams_config.pole_pairs * (angle >> (ams_config.resolution_bits-COMMUTATION_MAX_RES_BIT)) ) & COMMUTATION_MAX_RES_MASK;
                 else
-                    angle = (ams_config.pole_pairs * (angle << (12-ams_config.resolution_bits)) ) & 4095;
+                    angle = (ams_config.pole_pairs * (angle << (COMMUTATION_MAX_RES_BIT-ams_config.resolution_bits)) ) & COMMUTATION_MAX_RES_MASK;
                 break;
 
         //send multiturn count and position
@@ -583,8 +602,9 @@ int check_ams_config(AMSConfig &ams_config) {
                 } else
                     position = last_position;
                 //count reset
-                if (count >= ams_config.max_ticks || count < -ams_config.max_ticks)
+                if (ams_config.max_ticks > 0 && (count >= ams_config.max_ticks || count < -ams_config.max_ticks) ) {
                     count = 0;
+                }
                 out_count = count;
                 break;
 
@@ -635,10 +655,12 @@ int check_ams_config(AMSConfig &ams_config) {
         case i_ams[int i].reset_ams_angle(unsigned int new_angle) -> unsigned int out_offset:
                 writeZeroPosition(ams_ports, 0);
                 int position = readRotarySensorAngleWithoutCompensation(ams_ports);
-                if (ams_config.resolution_bits > 12)
-                    out_offset = (ticks_per_turn - ((new_angle << (ams_config.resolution_bits-12)) / ams_config.pole_pairs) + position) & (ticks_per_turn-1);
+                if (ams_config.resolution_bits > COMMUTATION_MAX_RES_BIT)
+                    out_offset = (ticks_per_turn - ((new_angle << (ams_config.resolution_bits-COMMUTATION_MAX_RES_BIT))
+                            / ams_config.pole_pairs) + position) & (ticks_per_turn-1);
                 else
-                    out_offset = (ticks_per_turn - ((new_angle >> (12-ams_config.resolution_bits)) / ams_config.pole_pairs) + position) & (ticks_per_turn-1);
+                    out_offset = (ticks_per_turn - ((new_angle >> (COMMUTATION_MAX_RES_BIT-ams_config.resolution_bits))
+                            / ams_config.pole_pairs) + position) & (ticks_per_turn-1);
                 writeZeroPosition(ams_ports, out_offset);
                 ams_config.offset = out_offset;
                 break;

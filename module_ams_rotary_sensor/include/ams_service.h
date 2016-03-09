@@ -54,6 +54,9 @@
 #define AMS_NOISE_NORMAL    0
 #define AMS_NOISE_REDUCED   1
 
+#define AMS_START_POS_ZERO      0
+#define AMS_START_POS_ACTUAL    1
+
 typedef enum {
     AMS_HYS_11BIT_3LSB = 0,
     AMS_HYS_11BIT_2LSB = 1,
@@ -75,7 +78,7 @@ typedef struct {
 #if AMS_SENSOR_TYPE == AS5147
     int width_index_pulse;      /**< Width of the index pulse I (0 = 3LSB, 1 = 1LSB). */
 #else
-    int factory_settings;       /**< Factory Settings, just reading, no  writing. */
+    int factory_settings;       /**< Factory Settings, only reading, no writing. */
 #endif
     int noise_setting;          /**< Noise setting. In 3.3V operation, VDD and VREG must be tied together. In this
                                      configuration, normal noise performance (ONL) is available at
@@ -111,6 +114,8 @@ typedef struct {
     int velocity_loop;          /**< Velcity loop time in microseconds */
 
     int max_ticks;              /**< The count is reset to 0 if greater than this */
+
+    int start_pos;              /**< The start position for multiturn can be zero or the actual position */
 } AMSConfig;
 
 

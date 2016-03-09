@@ -46,7 +46,7 @@ void bldc_loop(HallConfig hall_config, QEIConfig qei_config,
     if (!isnull(i_hall)) {
         if(!isnull(i_qei))
             max_count_per_hall = qei_config.ticks_resolution * QEI_CHANGES_PER_TICK /hall_config.pole_pairs;
-        angle_offset = (4096 / 6) / (2 * hall_config.pole_pairs);
+        angle_offset = (COMMUTATION_MAX_RESOLUTION / 6) / (2 * hall_config.pole_pairs);
     }
 
     int fw_flag = 0;
@@ -104,7 +104,7 @@ void bldc_loop(HallConfig hall_config, QEIConfig qei_config,
                     angle = i_ams.get_ams_angle();
                 }
                 if (motorcontrol_config.polarity_type == INVERTED_POLARITY)
-                    angle = 4096 - angle;
+                    angle = COMMUTATION_MAX_RESOLUTION - angle;
 
                 if (shutdown == 1) {    /* stop PWM */
                     pwm[0] = -1;
@@ -218,23 +218,23 @@ void bldc_loop(HallConfig hall_config, QEIConfig qei_config,
                         else
                             calib_angle = 3072;
                         if (sensor_select == HALL_SENSOR) {
-                            out_offset = (1024 - i_hall.get_hall_position()) & 4095;
+                            out_offset = (1024 - i_hall.get_hall_position()) & COMMUTATION_MAX_RES_MASK;
                             //Hall has a low resolution so the offsets could need to be shifted by +/- 1/6 turn
                             if (motorcontrol_config.polarity_type == INVERTED_POLARITY) {
                                 if (motorcontrol_config.bldc_winding_type == STAR_WINDING) {
-                                    motorcontrol_config.hall_offset[0] = (out_offset - 682) & 4095; // -1/6 turn
-                                    motorcontrol_config.hall_offset[1] = (out_offset + 682) & 4095; // + half turn - 1/6 turn
+                                    motorcontrol_config.hall_offset[0] = (out_offset - 682) & COMMUTATION_MAX_RES_MASK; // -1/6 turn
+                                    motorcontrol_config.hall_offset[1] = (out_offset + 682) & COMMUTATION_MAX_RES_MASK; // + half turn - 1/6 turn
                                 } else {
-                                    motorcontrol_config.hall_offset[1] = (out_offset - 682) & 4095;
-                                    motorcontrol_config.hall_offset[0] = (out_offset + 682) & 4095;
+                                    motorcontrol_config.hall_offset[1] = (out_offset - 682) & COMMUTATION_MAX_RES_MASK;
+                                    motorcontrol_config.hall_offset[0] = (out_offset + 682) & COMMUTATION_MAX_RES_MASK;
                                 }
                             } else {
                                 if (motorcontrol_config.bldc_winding_type == STAR_WINDING) {
                                     motorcontrol_config.hall_offset[0] = out_offset;
-                                    motorcontrol_config.hall_offset[1] = (out_offset + 2731) & 4095; // + half turn + 1/6 turn
+                                    motorcontrol_config.hall_offset[1] = (out_offset + 2731) & COMMUTATION_MAX_RES_MASK; // + half turn + 1/6 turn
                                 } else {
                                     motorcontrol_config.hall_offset[1] = out_offset;
-                                    motorcontrol_config.hall_offset[0] = (out_offset + 2731) & 4095;
+                                    motorcontrol_config.hall_offset[0] = (out_offset + 2731) & COMMUTATION_MAX_RES_MASK;
                                 }
                             }
                         } else if (sensor_select == BISS_SENSOR) {
@@ -269,7 +269,7 @@ void bldc_loop(HallConfig hall_config, QEIConfig qei_config,
                   if (!isnull(i_hall)) {
                       if(!isnull(i_qei))
                           max_count_per_hall = qei_config.ticks_resolution  * QEI_CHANGES_PER_TICK / hall_config.pole_pairs;
-                      angle_offset = (4096 / 6) / (2 * hall_config.pole_pairs);
+                      angle_offset = (COMMUTATION_MAX_RESOLUTION / 6) / (2 * hall_config.pole_pairs);
                   }
                   fw_flag = 0;
                   bw_flag = 0;
