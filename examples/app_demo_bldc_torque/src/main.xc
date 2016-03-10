@@ -2,7 +2,7 @@
 //#include <CORE_BOARD_REQUIRED>
 //#include <IFM_BOARD_REQUIRED>
 #include <CORE_C22-rev-a.bsp>
-#include <IFM_DC1K-rev-c3.bsp>
+#include <IFM_DC100-rev-b.bsp>
 
 /**
  * @file test_torque-ctrl.xc
@@ -29,7 +29,7 @@
 /* Test Profile Torque Function */
 void profile_torque_test(interface TorqueControlInterface client i_torque_control)
 {
-    int target_torque = 150;    //(desired torque/torque_constant)  * IFM resolution
+    int target_torque = 400;    //(desired torque/torque_constant)  * IFM resolution
     int torque_slope  = 100;   //(desired torque_slope/torque_constant)  * IFM resolution
 
     ProfilerConfig profiler_config;

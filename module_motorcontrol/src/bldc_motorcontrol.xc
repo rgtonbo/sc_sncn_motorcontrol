@@ -9,6 +9,8 @@
 #include <a4935.h>
 #include <sine_table_big.h>
 
+#include "print.h"
+
 static void commutation_init_to_zero(chanend c_pwm_ctrl, t_pwm_control & pwm_ctrl)
 {
     unsigned int pwm[3] = {0, 0, 0};  // PWM OFF (break mode; short all phases)
@@ -61,7 +63,7 @@ void bldc_loop(HallConfig hall_config, QEIConfig qei_config,
 
     // enable watchdog
     t :> ts;
-    t when timerafter (ts + 250000*4):> ts; /* FIXME: replace with constant */
+    t when timerafter (ts + MSEC_FAST*4):> ts;
     i_watchdog.start();
 
     t :> ts;
@@ -135,7 +137,6 @@ void bldc_loop(HallConfig hall_config, QEIConfig qei_config,
                         pwm[2] = ((sine_third_expanded(angle_pwm)) * -voltage) / pwm_half + pwm_half;
                     }
                 }
-
                 /* Limiting PWM values (and suppression of short pulses) is done in
                  * update_pwm_inv() */
                 update_pwm_inv(pwm_ctrl, c_pwm_ctrl, pwm);
@@ -195,7 +196,6 @@ void bldc_loop(HallConfig hall_config, QEIConfig qei_config,
                         shutdown = 0;
                         voltage = 0;
                     }
-
                     break;
 
             case i_motorcontrol[int i].get_fets_state() -> int fets_state:

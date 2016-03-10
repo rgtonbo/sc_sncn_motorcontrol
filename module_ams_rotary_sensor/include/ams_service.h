@@ -115,7 +115,8 @@ typedef struct {
 
     int max_ticks;              /**< The count is reset to 0 if greater than this */
 
-    int start_pos;              /**< The start position for multiturn can be zero or the actual position */
+    int start_pos;              /**< The start position for multiturn can be zero or the actual position.
+                                     To use the sensor as an absolute position encoder, it is necessary to use AMS_START_POS_ACTUAL */
 } AMSConfig;
 
 

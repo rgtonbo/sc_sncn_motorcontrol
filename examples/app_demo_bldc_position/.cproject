@@ -212,6 +212,28 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_spi_master}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_spi_master/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ams_rotary_sensor/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/config_motor/motor_configs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/examples/config_motor/motor_configs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/CORE_C22}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/CORE_C21}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC30}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_spi_master/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC1K}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC300}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC5K}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC100}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/default}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/COM_ETHERNET}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/targets}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/motor_config}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_spi_master}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_ams_rotary_sensor/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_ams_rotary_sensor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/COM_ECAT}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_ams_rotary_sensor/src}&quot;"/>
 								</option>
 								<option id="com.xmos.xc.compiler.option.defined.symbols.1773252399" name="com.xmos.xc.compiler.option.defined.symbols" superClass="com.xmos.xc.compiler.option.defined.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__SHRT_MAX__=32767"/>
@@ -893,6 +915,28 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_spi_master}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_spi_master/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ams_rotary_sensor/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/config_motor/motor_configs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/examples/config_motor/motor_configs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/CORE_C22}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/CORE_C21}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC30}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_spi_master/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC1K}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC300}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC5K}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC100}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/default}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/COM_ETHERNET}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/targets}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/motor_config}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_spi_master}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_ams_rotary_sensor/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_ams_rotary_sensor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/COM_ECAT}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_ams_rotary_sensor/src}&quot;"/>
 								</option>
 								<inputType id="com.xmos.cdt.c.compiler.input.c.19038239" name="C" superClass="com.xmos.cdt.c.compiler.input.c"/>
 							</tool>
@@ -1394,6 +1438,28 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_spi_master}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_spi_master/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/module_ams_rotary_sensor/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/config_motor/motor_configs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/examples/config_motor/motor_configs}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/CORE_C22}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/CORE_C21}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/doc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC30}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_spi_master/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC1K}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC300}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC5K}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/IFM_DC100}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/default}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/COM_ETHERNET}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/targets}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/motor_config}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_spi_master}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_ams_rotary_sensor/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_ams_rotary_sensor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_somanet-base/module_board-support/bsp/COM_ECAT}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/sc_sncn_motorcontrol/module_ams_rotary_sensor/src}&quot;"/>
 								</option>
 								<inputType id="com.xmos.cdt.cxx.compiler.input.cpp.75101409" name="C++" superClass="com.xmos.cdt.cxx.compiler.input.cpp"/>
 							</tool>

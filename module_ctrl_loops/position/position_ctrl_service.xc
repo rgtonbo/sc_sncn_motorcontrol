@@ -107,6 +107,9 @@ void position_control_service(ControlConfig &position_control_config,
                     } else if (position_control_config.feedback_sensor == AMS_SENSOR && !isnull(i_ams)) {
                         { actual_position, void } = i_ams.get_ams_position();
                     }
+                    // In case an absolute encoder is used, initialize target_position with the actual_position.
+                    // Otherwise the motor turns crazy (target_position == 0, actual >> 0 -> error_position = (target_position - actual_position) >> 0)
+                    target_position = actual_position;
 
                     config_update_flag = 0;
                 }
@@ -184,7 +187,7 @@ void position_control_service(ControlConfig &position_control_config,
                         position_control_out =  -position_control_out_limit;
                     }
 
-                   // set_commutation_sinusoidal(c_commutation, position_control_out);
+                    // set_commutation_sinusoidal(c_commutation, position_control_out);
                     i_motorcontrol.set_voltage(position_control_out);
 
 #ifdef DEBUG
@@ -231,7 +234,6 @@ void position_control_service(ControlConfig &position_control_config,
                 break;
 
             case i_position_control[int i].set_position(int in_target_position):
-
                 target_position = in_target_position;
 
                 break;

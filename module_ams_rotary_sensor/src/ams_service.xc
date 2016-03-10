@@ -494,23 +494,23 @@ static inline void multiturn(int &count, int last_position, int position, int ti
 
 int check_ams_config(AMSConfig &ams_config) {
     if(ams_config.polarity < 0  || ams_config.polarity > 1){
-        printstrln("Wrong AMS configuration: wrong direction");
+        printstrln("Error in AMS configuration: wrong direction");
         return ERROR;
     }
     if( AMS_USEC <= 0 ){
-        printstrln("Wrong AMS configuration: wrong AMS_USEC value");
+        printstrln("Error in AMS configuration: wrong AMS_USEC value");
         return ERROR;
     }
     if(ams_config.cache_time < 0){
-        printstrln("Wrong AMS configuration: wrong timeout");
+        printstrln("Error in AMS configuration: wrong timeout (< 0)");
         return ERROR;
     }
-    if(ams_config.velocity_loop == 0){
-        printstrln("Wrong AMS configuration: velocity loop too small (> 0)");
+    if(ams_config.velocity_loop < 1){
+        printstrln("Error in AMS configuration: velocity loop too small. Must be greater than 0");
         return ERROR;
     }
     if(ams_config.pole_pairs < 1){
-        printstrln("Wrong AMS configuration: wrong pole-pairs. Pole-pairs must be greater than 0");
+        printstrln("Error in AMS configuration: wrong pole-pairs. Pole-pairs must be greater than 0");
         return ERROR;
     }
     if (ams_config.pole_pairs > 7){
@@ -558,6 +558,8 @@ int check_ams_config(AMSConfig &ams_config) {
     unsigned int last_ams_read = 0;
 
     int notification = MOTCTRL_NTF_EMPTY;
+
+    delay_microseconds(10);
 
     //first read
     last_position = readRotarySensorAngleWithoutCompensation(ams_ports);
