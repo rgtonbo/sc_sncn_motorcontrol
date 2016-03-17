@@ -513,7 +513,7 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                     i_motorcontrol.set_voltage(torque_control_output);
 
                     // Check if a QEI sensor is connected
-                    if (check_sensor) {
+                    if ( check_sensor && (!isnull(i_qei)) ) {
                         // Get status from sensor. Flag is set, when QEI service has detected a sensor transition
                         if (!i_qei.get_sensor_is_active())
                             // And wait 10 ms

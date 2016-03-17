@@ -234,7 +234,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                     i_motorcontrol.set_voltage(velocity_control_out); //set_commutation_sinusoidal(c_commutation, velocity_control_out);//velocity_control_out
 
                     // Check if a QEI sensor is connected
-                    if (check_sensor) {
+                    if ( check_sensor && (!isnull(i_qei)) ) {
                         // Get status from sensor. Flag is set, when QEI service has detected a sensor transition
                         if (!i_qei.get_sensor_is_active())
                             // And wait 10 ms
