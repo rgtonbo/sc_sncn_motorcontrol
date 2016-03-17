@@ -17,6 +17,7 @@
 #include <motorcontrol_service.h>
 #include <filter_blocks.h>
 
+#define QEI_CHECK_VOLTAGE_THRESHOLD 20
 #define CURRENT_CONTROL
 
 #include <string.h>
@@ -38,7 +39,7 @@ void init_torque_control(interface TorqueControlInterface client i_torque_contro
 
         if (ctrl_state == INIT) {
 #ifdef debug_print
-            printstrln("torque control intialized");
+            printstrln("torque_ctrl_service: torque control initialized");
 #endif
             break;
         }
@@ -227,6 +228,7 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
     int config_update_flag = 1;
 
     int check_sensor = 1;
+    int check_sensor_begin = 0;
 
     printstr(">>   SOMANET TORQUE CONTROL SERVICE STARTING...\n");
 
@@ -253,7 +255,7 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                     // The Hall configuration for BLDC motor must always be loaded because of qei_counts_per_hall computation
                     if (isnull(i_hall)) {
                         if(motorcontrol_config.motor_type == BLDC_MOTOR){
-                            printstrln("Torque Control Loop ERROR: Interface for Hall Service not provided");
+                            printstrln("torque_ctrl_service: ERROR: Interface for Hall Service not provided");
                         }
                     } else {
                         hall_config = i_hall.get_hall_config();
@@ -261,7 +263,7 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
 
                     if (torque_control_config.feedback_sensor == QEI_SENSOR) {
                         if (isnull(i_qei)) {
-                            printstrln("Torque Control Loop ERROR: Interface for QEI Service not provided");
+                            printstrln("torque_ctrl_service: ERROR: Interface for QEI Service not provided");
                         } else {
                             qei_config = i_qei.get_qei_config();
                         }
@@ -269,7 +271,7 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
 
                     if (torque_control_config.feedback_sensor == BISS_SENSOR) {
                         if (isnull(i_biss)) {
-                            printstrln("Torque Control Loop ERROR: Interface for BISS Service not provided");
+                            printstrln("torque_ctrl_service: ERROR: Interface for BISS Service not provided");
                         } else {
                             biss_config = i_biss.get_biss_config();
                         }
@@ -291,7 +293,7 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
 
                     if (torque_control_config.control_loop_period < MIN_TORQUE_CONTROL_LOOP_PERIOD) {
                         torque_control_config.control_loop_period = MIN_TORQUE_CONTROL_LOOP_PERIOD;
-                        printstrln("Torque Control Loop ERROR: Loop period to small, set to 100 us");
+                        printstrln("torque_ctrl_service: ERROR: Loop period to small, set to 100 us");
                     }
 
                     if(torque_control_config.feedback_sensor == BISS_SENSOR) {
@@ -512,22 +514,26 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
 
                     i_motorcontrol.set_voltage(torque_control_output);
 
-                    // Check if a QEI sensor is connected
-                    if ( check_sensor && (!isnull(i_qei)) ) {
+                    // Check if a QEI sensor is connected, if interface is not null and the output voltage is high enough.
+                    if ( check_sensor && (!isnull(i_qei)) &&
+                       (torque_control_output > QEI_CHECK_VOLTAGE_THRESHOLD || torque_control_output < -QEI_CHECK_VOLTAGE_THRESHOLD)) {
                         // Get status from sensor. Flag is set, when QEI service has detected a sensor transition
-                        if (!i_qei.get_sensor_is_active())
-                            // And wait 10 ms
-                            delay_milliseconds(10);
-                        // Check, if transition was detected.
-                        // If not, exit task
-                        if (!i_qei.get_sensor_is_active()) {
-                            // Turn off the motor
-                            i_motorcontrol.set_voltage(0);
-                            printstr("Error: QEI Sensor not connected\n");
-                            exit(-1);
+                        if (!i_qei.get_sensor_is_active() && !check_sensor_begin) {
+                            check_sensor_begin = 1;
+                            // Wait for next loop pass
                         }
-                        else {
-                            check_sensor = 0;
+                        else if (check_sensor_begin) {
+                            // Check, if transition was detected.
+                            // If not, exit task
+                            if (!i_qei.get_sensor_is_active()) {
+                                // Turn off the motor
+                                i_motorcontrol.set_voltage(0);
+                                printstr("Error: QEI Sensor probably not connected\n");
+                                exit(-1);
+                            }
+                            else {
+                                check_sensor = 0;
+                            }
                         }
                     }
                 }
@@ -633,7 +639,7 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                 int init_state = i_motorcontrol.check_busy(); //__check_commutation_init(c_commutation);
                 if (init_state == INIT) {
 #ifdef debug_print
-                    printstrln("commutation intialized");
+                    printstrln("torque_ctrl_service: commutation initialized");
 #endif
                     if (i_motorcontrol.get_fets_state() == 0) { //check_fet_state(c_commutation);
                         i_motorcontrol.set_fets_state(1); //enable_motor(c_commutation);
@@ -647,12 +653,12 @@ void torque_ctrl_loop(ControlConfig &torque_control_config,
                     }
                 }
 #ifdef debug_print
-                printstrln("torque control activated");
+                printstrln("torque_ctrl_service: torque control activated");
 #endif
                 break;
 
             case c_current :> command:
-                //printstrln("adc calibrated");
+                //printstrln("torque_ctrl_service: adc calibrated");
                 start_flag = 1;
                 break;
 

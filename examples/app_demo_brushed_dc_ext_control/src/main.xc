@@ -1,12 +1,9 @@
 /* PLEASE REPLACE "CORE_BOARD_REQUIRED" AND "IFM_BOARD_REQUIRED" WITH AN APPROPRIATE BOARD SUPPORT FILE FROM module_board-support */
-//#include <CORE_BOARD_REQUIRED>
-//#include <IFM_BOARD_REQUIRED>
 #include <CORE_BOARD_REQUIRED>
 #include <IFM_BOARD_REQUIRED>
 
 /**
- * @brief Test illustrates usage of
- * @date 17/06/2014
+ * @brief Test illustrates usage of external ADC inputs for controlling a brushed DC motor. Example can be easily adapted for BLDC.
  */
 
 #include <pwm_service.h>

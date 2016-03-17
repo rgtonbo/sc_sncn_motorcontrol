@@ -16,6 +16,8 @@
 
 #include <xscope.h>
 
+#define QEI_CHECK_VOLTAGE_THRESHOLD 20
+
 //#define Debug_velocity_ctrl
 
 void init_velocity_control(interface VelocityControlInterface client i_velocity_control)
@@ -30,7 +32,7 @@ void init_velocity_control(interface VelocityControlInterface client i_velocity_
 
         if (ctrl_state == INIT) {
 #ifdef debug_print
-            printstrln("velocity control intialized");
+            printstrln("velocity_ctrl_service: velocity control initialized");
 #endif
             break;
         }
@@ -90,6 +92,8 @@ void velocity_control_service(ControlConfig &velocity_control_config,
     int config_update_flag = 1;
 
     int check_sensor = 1;
+    int check_sensor_begin = 0;
+
     int test_velocity = 0;
 
     printstr(">>   SOMANET VELOCITY CONTROL SERVICE STARTING...\n");
@@ -119,7 +123,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
 
                     if (velocity_control_config.feedback_sensor == HALL_SENSOR) {
                         if (isnull(i_hall)) {
-                            printstrln("Velocity Control Loop ERROR: Interface for Hall Service is not provided, but configured to be used");
+                            printstrln("velocity_ctrl_service: ERROR: Interface for Hall Service is not provided, but configured to be used");
                             exit(-1);
                         } else {
                             speed_factor = i_hall.get_hall_config().pole_pairs * 4096 * velocity_control_config.control_loop_period / 1000; // variable pole_pairs
@@ -128,7 +132,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                         }
                     } else if (velocity_control_config.feedback_sensor == QEI_SENSOR) {
                         if (isnull(i_qei)) {
-                            printstrln("Velocity Control Loop ERROR: Interface for QEI Service is not provided, but configured to be used");
+                            printstrln("velocity_ctrl_service: ERROR: Interface for QEI Service is not provided, but configured to be used");
                             exit(-1);
                         } else {
                             QEIConfig qei_config = i_qei.get_qei_config();
@@ -137,7 +141,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                         }
                     } else if (velocity_control_config.feedback_sensor == BISS_SENSOR){
                         if(isnull(i_biss)){
-                            printstrln("Velocity Control Loop ERROR: Interface for BiSS Service is not provided, but configured to be used");
+                            printstrln("velocity_ctrl_service: ERROR: Interface for BiSS Service is not provided, but configured to be used");
                             exit(-1);
                         }
                     }
@@ -233,22 +237,26 @@ void velocity_control_service(ControlConfig &velocity_control_config,
 
                     i_motorcontrol.set_voltage(velocity_control_out); //set_commutation_sinusoidal(c_commutation, velocity_control_out);//velocity_control_out
 
-                    // Check if a QEI sensor is connected
-                    if ( check_sensor && (!isnull(i_qei)) ) {
+                    // Check if a QEI sensor is connected, if interface is not null and the output voltage is high enough.
+                    if ( check_sensor && (!isnull(i_qei)) &&
+                       (velocity_control_out > QEI_CHECK_VOLTAGE_THRESHOLD || velocity_control_out < -QEI_CHECK_VOLTAGE_THRESHOLD)) {
                         // Get status from sensor. Flag is set, when QEI service has detected a sensor transition
-                        if (!i_qei.get_sensor_is_active())
-                            // And wait 10 ms
-                            delay_milliseconds(10);
-                        // Check, if transition was detected.
-                        // If not, exit task
-                        if (!i_qei.get_sensor_is_active()) {
-                            // Turn off the motor
-                            i_motorcontrol.set_voltage(0);
-                            printstr("Error: QEI Sensor not connected\n");
-                            exit(-1);
+                        if (!i_qei.get_sensor_is_active() && !check_sensor_begin) {
+                            check_sensor_begin = 1;
+                            // Wait for next loop pass
                         }
-                        else {
-                            check_sensor = 0;
+                        else if (check_sensor_begin) {
+                            // Check, if transition was detected.
+                            // If not, exit task
+                            if (!i_qei.get_sensor_is_active()) {
+                                // Turn off the motor
+                                i_motorcontrol.set_voltage(0);
+                                printstr("Error: QEI Sensor probably not connected\n");
+                                exit(-1);
+                            }
+                            else {
+                                check_sensor = 0;
+                            }
                         }
                     }
 
@@ -359,7 +367,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                 while (1) {
                     if (i_motorcontrol.check_busy() == INIT) { //__check_commutation_init(c_commutation);
 #ifdef debug_print
-                        printstrln("commutation intialized");
+                        printstrln("velocity_ctrl_service: commutation initialized");
 #endif
                         if (i_motorcontrol.get_fets_state() == 0) { //check_fet_state(c_commutation);
                             i_motorcontrol.set_fets_state(1); //enable_motor(c_commutation);
@@ -370,7 +378,7 @@ void velocity_control_service(ControlConfig &velocity_control_config,
                 }
 
 #ifdef debug_print
-                printstrln("velocity control activated");
+                printstrln("velocity_ctrl_service: velocity control activated");
 #endif
                 break;
 

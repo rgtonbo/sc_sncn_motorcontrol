@@ -1,5 +1,5 @@
 /**
- * @file motor_config_Nanotec_DB42C03.h
+ * @file motor_config_Maxon_456710.h
  * @brief Motor Control config file (define your motor specifications here)
  * @author Synapticon GmbH <support@synapticon.com>
  */
@@ -16,7 +16,7 @@
 #define MOTOR_TYPE  BLDC_MOTOR
 
 // NUMBER OF POLE PAIRS (if applicable)
-#define POLE_PAIRS  4
+#define POLE_PAIRS  7
 
 // WINDING TYPE (if applicable) [STAR_WINDING, DELTA_WINDING]
-#define BLDC_WINDING_TYPE   DELTA_WINDING
+#define BLDC_WINDING_TYPE   STAR_WINDING

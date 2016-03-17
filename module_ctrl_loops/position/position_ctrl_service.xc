@@ -14,6 +14,8 @@
 #include <hall_service.h>
 #include <qei_service.h>
 
+#define QEI_CHECK_VOLTAGE_THRESHOLD 20
+
 void init_position_control(interface PositionControlInterface client i_position_control)
 {
     int ctrl_state;
@@ -26,7 +28,7 @@ void init_position_control(interface PositionControlInterface client i_position_
 
         if (ctrl_state == INIT) {
 #ifdef debug_print
-            printstrln("position control intialized");
+            printstrln("position_ctrl_service: position control initialized");
 #endif
             break;
         }
@@ -69,6 +71,7 @@ void position_control_service(ControlConfig &position_control_config,
     int config_update_flag = 1;
 
     int check_sensor = 1;
+    int check_sensor_begin = 0;
 
     printstr(">>   SOMANET POSITION CONTROL SERVICE STARTING...\n");
 
@@ -117,7 +120,7 @@ void position_control_service(ControlConfig &position_control_config,
                                 actual_position = i_hall.get_hall_position_absolute();
                             }
                             else{
-                                printstrln("ERROR: Hall interface is not provided but requested");
+                                printstrln("position_ctrl_service: ERROR: Hall interface is not provided but requested");
                                 exit(-1);
                             }
                             break;
@@ -127,7 +130,7 @@ void position_control_service(ControlConfig &position_control_config,
                                 actual_position =  i_qei.get_qei_position_absolute();
                             }
                             else{
-                                printstrln("ERROR: Encoder interface is not provided but requested");
+                                printstrln("position_ctrl_service: ERROR: Encoder interface is not provided but requested");
                                 exit(-1);
                             }
                             break;
@@ -137,7 +140,7 @@ void position_control_service(ControlConfig &position_control_config,
                                 { actual_position, void, void } = i_biss.get_biss_position();
                             }
                             else{
-                                printstrln("ERROR: BiSS interface is not provided but requested");
+                                printstrln("position_ctrl_service: ERROR: BiSS interface is not provided but requested");
                                 exit(-1);
                             }
                             break;
@@ -175,24 +178,29 @@ void position_control_service(ControlConfig &position_control_config,
                    // set_commutation_sinusoidal(c_commutation, position_control_out);
                     i_motorcontrol.set_voltage(position_control_out);
 
-                    // Check if a QEI sensor is connected
-                    if ( check_sensor && (!isnull(i_qei)) ) {
+                    // Check if a QEI sensor is connected, if interface is not null and the output voltage is high enough.
+                    if ( check_sensor && (!isnull(i_qei)) &&
+                       (position_control_out > QEI_CHECK_VOLTAGE_THRESHOLD || position_control_out < -QEI_CHECK_VOLTAGE_THRESHOLD)) {
                         // Get status from sensor. Flag is set, when QEI service has detected a sensor transition
-                        if (!i_qei.get_sensor_is_active())
-                            // And wait 10 ms
-                            delay_milliseconds(10);
-                        // Check, if transition was detected.
-                        // If not, exit task
-                        if (!i_qei.get_sensor_is_active()) {
-                            // Turn off the motor
-                            i_motorcontrol.set_voltage(0);
-                            printstr("Error: QEI Sensor not connected\n");
-                            exit(-1);
+                        if (!i_qei.get_sensor_is_active() && !check_sensor_begin) {
+                            check_sensor_begin = 1;
+                            // Wait for next loop pass
                         }
-                        else {
-                            check_sensor = 0;
+                        else if (check_sensor_begin) {
+                            // Check, if transition was detected.
+                            // If not, exit task
+                            if (!i_qei.get_sensor_is_active()) {
+                                // Turn off the motor
+                                i_motorcontrol.set_voltage(0);
+                                printstr("Error: QEI Sensor probably not connected\n");
+                                exit(-1);
+                            }
+                            else {
+                                check_sensor = 0;
+                            }
                         }
                     }
+
 
 #ifdef DEBUG
                     xscope_int(ACTUAL_POSITION, actual_position);
@@ -283,7 +291,7 @@ void position_control_service(ControlConfig &position_control_config,
                 while (1) {
                     if (i_motorcontrol.check_busy() == INIT) { //__check_commutation_init(c_commutation);
 #ifdef debug_print
-                        printstrln("commutation intialized");
+                        printstrln("position_ctrl_service: commutation initialized");
 #endif
                         if (i_motorcontrol.get_fets_state() == 0) { // check_fet_state(c_commutation);
                             i_motorcontrol.set_fets_state(1);
@@ -294,7 +302,7 @@ void position_control_service(ControlConfig &position_control_config,
                     }
                 }
 #ifdef debug_print
-                printstrln("position control activated");
+                printstrln("position_ctrl_service: position control activated");
 #endif
                 break;
 
@@ -310,7 +318,7 @@ void position_control_service(ControlConfig &position_control_config,
                 i_motorcontrol.set_fets_state(0); // disable_motor(c_commutation);
                 delay_milliseconds(30); //wait_ms(30, 1, ts); //
 #ifdef debug_print
-                printstrln("position control disabled");
+                printstrln("position_ctrl_service: position control disabled");
 #endif
                 break;
         }
