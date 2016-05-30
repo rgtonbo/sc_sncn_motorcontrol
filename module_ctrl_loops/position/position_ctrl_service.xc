@@ -233,6 +233,10 @@ void position_control_service(ControlConfig &position_control_config,
                         /* PID Controller */
 
                     i_motorcontrol.set_torque(int16_position_k);
+//                    delay_microseconds(5);
+//                    int16_position_k = i_motorcontrol.get_velocity_actual();
+//                    delay_microseconds(5);
+//                    int16_position_k = i_motorcontrol.get_position_actual();
 
 
                 } // end control activated
