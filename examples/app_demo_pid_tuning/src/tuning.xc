@@ -47,6 +47,10 @@ void run_offset_tuning(int position_limit, interface MotorcontrolInterface clien
         case 'd':
             if (!isnull(i_tuning))
                 i_tuning.set_position_direct(value*sign);
+                delay_milliseconds(400);
+                i_tuning.set_position_direct(-value*sign);
+                delay_milliseconds(400);
+                i_tuning.set_position_direct(0);
             break;
         //toggle field controler
         case 'f':
@@ -259,17 +263,17 @@ static inline void update_offset(MotorcontrolConfig &motorcontrol_config, int vo
             ts += USEC_STD * 1000;
 
             //get position and velocity
-            if (motorcontrol_config.commutation_sensor == BISS_SENSOR && !isnull(i_biss)) {
-                velocity = i_biss.get_biss_velocity();
-                { count, void, void } = i_biss.get_biss_position();
-            } else if (motorcontrol_config.commutation_sensor == AMS_SENSOR && !isnull(i_ams)) {
-                velocity = i_ams.get_ams_velocity();
-                { count, void } = i_ams.get_ams_position();
-            } else if (motorcontrol_config.commutation_sensor == HALL_SENSOR && !isnull(i_hall)) {
-                count = i_hall.get_hall_position_absolute();
-                velocity = i_hall.get_hall_velocity();
-            }
-            xscope_int(VELOCITY, velocity);
+//            if (motorcontrol_config.commutation_sensor == BISS_SENSOR && !isnull(i_biss)) {
+//                velocity = i_biss.get_biss_velocity();
+//                { count, void, void } = i_biss.get_biss_position();
+//            } else if (motorcontrol_config.commutation_sensor == AMS_SENSOR && !isnull(i_ams)) {
+//                velocity = i_ams.get_ams_velocity();
+//                { count, void } = i_ams.get_ams_position();
+//            } else if (motorcontrol_config.commutation_sensor == HALL_SENSOR && !isnull(i_hall)) {
+//                count = i_hall.get_hall_position_absolute();
+//                velocity = i_hall.get_hall_velocity();
+//            }
+//            xscope_int(VELOCITY, velocity);
 
 //            //torque display
 //            if (motorcontrol_config.commutation_method == FOC) {
@@ -327,17 +331,17 @@ static inline void update_offset(MotorcontrolConfig &motorcontrol_config, int vo
             break;
 
         case i_tuning.set_position_direct(int in_position):
-            if (!isnull(i_position_control)) {
-                if (in_position == 0x7fffffff) {
-                    i_position_control.disable_position_ctrl();
-                } else {
+//            if (!isnull(i_position_control)) {
+//                if (in_position == 0x7fffffff) {
+//                    i_position_control.disable_position_ctrl();
+//                } else {
                     i_position_control.enable_position_ctrl();
                     i_position_control.set_position(in_position);
                     printf("Go to %d\n", in_position);
-                }
-            } else {
-                printf("No position control\n");
-            }
+//                }
+//            } else {
+//                printf("No position control\n");
+//            }
             break;
 
         case i_tuning.set_limit(int in_limit):
