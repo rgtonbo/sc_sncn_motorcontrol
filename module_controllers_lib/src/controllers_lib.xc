@@ -23,7 +23,7 @@ void PID_init(int i1_P, int i1_I, int i1_D, int i1_P_error_limit, int i1_I_error
 }
 
 
-int PID_update(int i1_setpoint, int i1_feedback, PIDparam &param)
+int PID_update(int i1_setpoint, int i1_feedback, int i1_T_s, PIDparam &param)
 {
     int i1_P_error, i1_I_error, i1_derivative, i2_cmd;
 

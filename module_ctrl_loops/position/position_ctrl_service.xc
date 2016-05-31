@@ -8,6 +8,8 @@
 #include <print.h>
 #include <stdlib.h>
 
+#include <controllers_lib.h>
+
 #include <position_ctrl_service.h>
 #include <a4935.h>
 #include <mc_internal_constants.h>
@@ -132,12 +134,13 @@ void position_control_service(ControlConfig &position_control_config,
 //    int16_t int16_velocity_ref_k = 0;
 //    int16_t int16_position_ref_k = 0;
 
-    int velocity_k = 0;
-    int velocity_ref_k = 0;
-    int velocity_cmd_k = 0;
+    PIDparam velocity_control_pid_param;
+    int int16_velocity_k = 0;
+    int int16_velocity_ref_k = 0;
+    int int16_velocity_cmd_k = 0;
 
-    int position_k = 0;
-    int position_ref_k = 0;
+    int int16_position_k = 0;
+    int int16_position_ref_k = 0;
 
     timer t;
     unsigned int ts;
@@ -168,6 +171,9 @@ void position_control_service(ControlConfig &position_control_config,
 
     t :> ts;
 
+//    void PID_init(/*i1_P*/, int i1_I, int i1_D, int i1_P_error_limit, int i1_I_error_limit, int i1_itegral_limit, int i1_cmd_limit, int i1_T_s, PIDparam &param);
+
+
     i_motorcontrol.set_offset_value(2440);
     delay_milliseconds(2000);
     i_motorcontrol.set_torque_control_enabled();
@@ -182,14 +188,14 @@ void position_control_service(ControlConfig &position_control_config,
                 if (activate == 1) {
                         /* PID Controller */
 
-                    velocity_ref_k = position_ref_k;
+                    int16_velocity_ref_k = int16_position_ref_k;
 
-                    velocity_k = i_motorcontrol.get_velocity_actual();
+                    int16_velocity_k = i_motorcontrol.get_velocity_actual();
 
-                    velocity_cmd_k = velocity_ref_k;
+                    int16_velocity_cmd_k = int16_velocity_ref_k;
                     delay_microseconds(5);
 
-                    i_motorcontrol.set_torque(velocity_cmd_k);
+                    i_motorcontrol.set_torque(int16_velocity_cmd_k);
 //                    delay_microseconds(5);
 //                    position_k = i_motorcontrol.get_position_actual();
 
@@ -197,8 +203,8 @@ void position_control_service(ControlConfig &position_control_config,
                 } // end control activated
 
 //#ifdef USE_XSCOPE
-                        xscope_int(VELOCITY_REF, velocity_ref_k);
-                        xscope_int(VELOCITY, velocity_k);
+                        xscope_int(VELOCITY_REF, int16_velocity_ref_k);
+                        xscope_int(VELOCITY, int16_velocity_k);
 //#endif
 
                 break;
@@ -238,7 +244,7 @@ void position_control_service(ControlConfig &position_control_config,
 
             case i_position_control[int i].set_position(int in_target_position):
 
-                    position_ref_k = in_target_position;
+                    int16_position_ref_k = in_target_position;
 
                 break;
 
@@ -255,7 +261,7 @@ void position_control_service(ControlConfig &position_control_config,
 
             case i_position_control[int i].get_target_position() -> int out_target_position:
 
-                out_target_position = position_k;
+                out_target_position = int16_position_k;
                 break;
 
             case i_position_control[int i].set_position_control_config(ControlConfig in_params):
@@ -272,7 +278,7 @@ void position_control_service(ControlConfig &position_control_config,
             case i_position_control[int i].set_position_sensor(int in_sensor_used):
 
                 position_control_config.feedback_sensor = in_sensor_used;
-                position_k = actual_position;
+                int16_position_k = actual_position;
                 config_update_flag = 1;
 
                 break;
