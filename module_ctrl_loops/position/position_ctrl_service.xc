@@ -127,10 +127,17 @@ void position_control_service(ControlConfig &position_control_config,
     /* end cascaded */
 
 
-    int16_t int16_velocity_k = 0;
-    int16_t int16_position_k = 0;
-    int16_t int16_velocity_ref_k = 0;
-    int16_t int16_position_ref_k = 0;
+//    int16_t int16_velocity_k = 0;
+//    int16_t int16_position_k = 0;
+//    int16_t int16_velocity_ref_k = 0;
+//    int16_t int16_position_ref_k = 0;
+
+    int velocity_k = 0;
+    int velocity_ref_k = 0;
+    int velocity_cmd_k = 0;
+
+    int position_k = 0;
+    int position_ref_k = 0;
 
     timer t;
     unsigned int ts;
@@ -160,63 +167,6 @@ void position_control_service(ControlConfig &position_control_config,
     }
 
     t :> ts;
-//    while(1)
-//    {
-//
-//        printf("\n\n\n\n\nsending offset_detection command ...\n");
-//        i_motorcontrol.set_offset_detection_enabled();
-//        delay_milliseconds(10000);
-//
-//
-//        offset=i_motorcontrol.set_calib(0);
-//        printf("detected offset is: %i\n", offset);
-//        delay_milliseconds(2000);
-//
-//
-//        printf("setting offset to (detected_offset+10) ...\n");
-//        i_motorcontrol.set_offset_value(offset+10);
-//        delay_milliseconds(2000);
-//
-//
-//        offset=i_motorcontrol.set_calib(0);
-//        printf("set offset is: %i\n", offset);
-//        delay_milliseconds(2000);
-//
-//
-//        printf("Enabling torque controller ...\n");
-//        i_motorcontrol.set_torque_control_enabled();
-//        delay_milliseconds(5000);
-//
-//
-//        for(int i=0;i<=10;i++)
-//        {
-//            torque_ref = 100;
-//            printf("sending positive torque command ...\n");
-//            i_motorcontrol.set_torque(torque_ref);
-//            delay_milliseconds(200);
-//
-//            torque_ref = -100;
-//            printf("sending negative torque command ...\n");
-//            i_motorcontrol.set_torque(torque_ref);
-//            delay_milliseconds(200);
-//        }
-//
-//
-//        printf("sending zero torque command ...\n");
-//        torque_ref = 0;
-//        i_motorcontrol.set_torque(torque_ref);
-//        delay_milliseconds(5000);
-//
-//
-//        printf("Disabling torque controller ...\n");
-//        i_motorcontrol.set_torque_control_disabled();
-//        delay_milliseconds(5000);
-//
-//        delay_milliseconds(20000);
-//
-//
-//    }
-
 
     i_motorcontrol.set_offset_value(2440);
     delay_milliseconds(2000);
@@ -232,18 +182,23 @@ void position_control_service(ControlConfig &position_control_config,
                 if (activate == 1) {
                         /* PID Controller */
 
-                    i_motorcontrol.set_torque(int16_position_k);
+                    velocity_ref_k = position_ref_k;
+
+                    velocity_k = i_motorcontrol.get_velocity_actual();
+
+                    velocity_cmd_k = velocity_ref_k;
+                    delay_microseconds(5);
+
+                    i_motorcontrol.set_torque(velocity_cmd_k);
 //                    delay_microseconds(5);
-//                    int16_position_k = i_motorcontrol.get_velocity_actual();
-//                    delay_microseconds(5);
-//                    int16_position_k = i_motorcontrol.get_position_actual();
+//                    position_k = i_motorcontrol.get_position_actual();
 
 
                 } // end control activated
 
 //#ifdef USE_XSCOPE
-                        xscope_int(TARGET_VELOCITY, int16_position_k);
-                        xscope_int(REF_VELOCITY, int16_position_k);
+                        xscope_int(VELOCITY_REF, velocity_ref_k);
+                        xscope_int(VELOCITY, velocity_k);
 //#endif
 
                 break;
@@ -283,7 +238,7 @@ void position_control_service(ControlConfig &position_control_config,
 
             case i_position_control[int i].set_position(int in_target_position):
 
-                    int16_position_k = in_target_position;
+                    position_ref_k = in_target_position;
 
                 break;
 
@@ -300,7 +255,7 @@ void position_control_service(ControlConfig &position_control_config,
 
             case i_position_control[int i].get_target_position() -> int out_target_position:
 
-                out_target_position = int16_position_k;
+                out_target_position = position_k;
                 break;
 
             case i_position_control[int i].set_position_control_config(ControlConfig in_params):
@@ -317,7 +272,7 @@ void position_control_service(ControlConfig &position_control_config,
             case i_position_control[int i].set_position_sensor(int in_sensor_used):
 
                 position_control_config.feedback_sensor = in_sensor_used;
-                int16_position_k = actual_position;
+                position_k = actual_position;
                 config_update_flag = 1;
 
                 break;

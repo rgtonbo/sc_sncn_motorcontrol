@@ -17,10 +17,10 @@
 <xSCOPEconfig ioMode="timed" enabled="true">
 
 	<!-- Velocity Position Control -->
-	<Probe name="TARGET VELOCITY" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
-	<Probe name="REF VELOCITY" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
-	<Probe name="TEMP1" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
-	<Probe name="TEMP2" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
+	<Probe name="VELOCITY REF" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
+	<Probe name="VELOCITY" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
+	<Probe name="TEMP1" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
+	<Probe name="TEMP2" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
 	
 	<!-- Joint Torque and Position Control Loops -->
 	<Probe name="TORQUE SENS" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
@@ -31,14 +31,13 @@
 	<!-- Motor Torque Control Loop -->
 	<Probe name="Torque" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
     <Probe name="Target Torque" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
-    <Probe name="VOLTAGE" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
+    <Probe name="VOLTAGE" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
 	
     <Probe name="I_B" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
     <Probe name="I_C" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
     
     <Probe name="ANGLE" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
     <Probe name="ANGLE_ERROR" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
-    <Probe name="VELOCITY" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>  
 
     <Probe name="TARGET_POSITION" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
     <Probe name="ACTUAL_POSITION" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/> 
