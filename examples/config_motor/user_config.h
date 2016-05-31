@@ -25,17 +25,19 @@
  //#include <motor_configs/motor_config_LDO_42BLS41.h>
  //#include <motor_configs/motor_config_Moons_42BL30L2.h>
  //#include <motor_config_Nanotec_DB59L024035-A.h>
- #include <motor_config.h>
+#include <motor_config_MABI_Hohlwellenservomotor_A5.h>
+
+#include <motor_config.h>
 
 /////////////////////////////////////////////
 //////  MOTOR SENSORS CONFIGURATION
 ///////////////////////////////////////////
 
 // SENSOR USED FOR COMMUTATION (if applicable) [HALL_SENSOR]
-#define MOTOR_COMMUTATION_SENSOR    BISS_SENSOR
+#define MOTOR_COMMUTATION_SENSOR   BISS_SENSOR
 
 // SENSOR USED FOR CONTROL FEEDBACK [HALL_SENSOR, QEI_SENSOR, BISS_SENSOR]
-#define MOTOR_FEEDBACK_SENSOR       BISS_SENSOR
+#define MOTOR_FEEDBACK_SENSOR      BISS_SENSOR
 
 // TYPE OF INCREMENTAL ENCODER (if applicable) [QEI_WITH_INDEX, QEI_WITH_NO_INDEX]
 #define QEI_SENSOR_INDEX_TYPE       QEI_WITH_INDEX

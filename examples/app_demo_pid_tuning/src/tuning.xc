@@ -7,8 +7,10 @@
 #include <tuning.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <controllers_lib.h>
 
-void run_offset_tuning(int position_limit, interface MotorcontrolInterface client i_commutation, interface TuningInterface client ?i_tuning)
+void run_offset_tuning(int position_limit, interface MotorcontrolInterface client i_commutation,
+                       interface TuningInterface client ?i_tuning, interface PositionControlInterface client ?i_position_control)
 {
     delay_milliseconds(500);
     printf(">>   SOMANET PID TUNING SERVICE STARTING...\n");
@@ -18,6 +20,16 @@ void run_offset_tuning(int position_limit, interface MotorcontrolInterface clien
     //set position limit
     if (position_limit && !isnull(i_tuning))
         i_tuning.set_limit(position_limit);
+
+    PIDparam velocity_control_pid_param;
+
+    unsigned int uint8_Kp = 0;
+    unsigned int uint8_Ki = 0;
+    unsigned int uint8_Kd = 0;
+    int int16_P_error_limit = 0;
+    int int16_I_error_limit = 0;
+    int int16_integral_limit = 0;
+    int int32_cmd_limit = 0;
 
     fflush(stdout);
     //read and adjust the offset.
@@ -47,6 +59,10 @@ void run_offset_tuning(int position_limit, interface MotorcontrolInterface clien
         case 'd':
             if (!isnull(i_tuning))
                 i_tuning.set_position_direct(value*sign);
+                delay_milliseconds(400);
+                i_tuning.set_position_direct(-value*sign);
+                delay_milliseconds(400);
+                i_tuning.set_position_direct(0);
             break;
         //toggle field controler
         case 'f':
@@ -59,32 +75,56 @@ void run_offset_tuning(int position_limit, interface MotorcontrolInterface clien
             }
             i_commutation.set_control(field_control_flag);
             break;
-        //pid
+        //velocity pid coefficients
         case 'k':
-            int Kp, Ki, Kd;
             switch(mode_2) {
             case 'p':
-                { Kp, Ki, Kd } = i_commutation.set_torque_pid(value, -1, -1);
-                printf("Kp torque: %d\n", value);
+                uint8_Kp = value;
+                i_position_control.set_velocity_pid_coefficients(uint8_Kp, uint8_Ki, uint8_Kd);
+                printf("Kp:%d Ki:%d Kd:%d\n", uint8_Kp, uint8_Ki, uint8_Kd);
                 break;
             case 'i':
-                { Kp, Ki, Kd } = i_commutation.set_torque_pid(-1, value, -1);
-                printf("Ki torque: %d\n", value);
+                uint8_Ki = value;
+                i_position_control.set_velocity_pid_coefficients(uint8_Kp, uint8_Ki, uint8_Kd);
+                printf("Kp:%d Ki:%d Kd:%d\n", uint8_Kp, uint8_Ki, uint8_Kd);
                 break;
             case 'd':
-                { Kp, Ki, Kd } = i_commutation.set_torque_pid(-1, -1, value);
-                printf("Kd torque: %d\n", value);
+                uint8_Kd = value;
+                i_position_control.set_velocity_pid_coefficients(uint8_Kp, uint8_Ki, uint8_Kd);
+                printf("Kp:%d Ki:%d Kd:%d\n", uint8_Kp, uint8_Ki, uint8_Kd);
                 break;
             default:
-                { Kp, Ki, Kd } = i_commutation.set_torque_pid(-1, -1, -1);
+                printf("Kp:%d Ki:%d Kd:%d\n", uint8_Kp, uint8_Ki, uint8_Kd);
                 break;
             }
-            printf("Kp_t: %d, Ki_t:%d, Kd_t: %d\n", Kp, Ki, Kd);
             break;
-        //position limit
+        //velocity pid limits
         case 'l':
-            if (!isnull(i_tuning))
-                i_tuning.set_limit(value * sign);
+            switch(mode_2) {
+            case 'p':
+                int16_P_error_limit = value * sign;
+                i_position_control.set_velocity_pid_limits(int16_P_error_limit, int16_I_error_limit, int16_integral_limit, int32_cmd_limit);
+                printf("P_e_lim:%d I_e_lim:%d int_lim:%d cmd_lim:%d\n", int16_P_error_limit, int16_I_error_limit, int16_integral_limit, int32_cmd_limit);
+                break;
+            case 'i':
+                int16_I_error_limit = value * sign;
+                i_position_control.set_velocity_pid_limits(int16_P_error_limit, int16_I_error_limit, int16_integral_limit, int32_cmd_limit);
+                printf("P_e_lim:%d I_e_lim:%d int_lim:%d cmd_lim:%d\n", int16_P_error_limit, int16_I_error_limit, int16_integral_limit, int32_cmd_limit);
+                break;
+            case 'l':
+                int16_integral_limit = value * sign;
+                i_position_control.set_velocity_pid_limits(int16_P_error_limit, int16_I_error_limit, int16_integral_limit, int32_cmd_limit);
+                printf("P_e_lim:%d I_e_lim:%d int_lim:%d cmd_lim:%d\n", int16_P_error_limit, int16_I_error_limit, int16_integral_limit, int32_cmd_limit);
+                break;
+            case 'c':
+                int32_cmd_limit = value * sign;
+                i_position_control.set_velocity_pid_limits(int16_P_error_limit, int16_I_error_limit, int16_integral_limit, int32_cmd_limit);
+                printf("P_e_lim:%d I_e_lim:%d int_lim:%d cmd_lim:%d\n", int16_P_error_limit, int16_I_error_limit, int16_integral_limit, int32_cmd_limit);
+                break;
+            default:
+                printf("P_e_lim:%d I_e_lim:%d int_lim:%d cmd_lim:%d\n", int16_P_error_limit, int16_I_error_limit, int16_integral_limit, int32_cmd_limit);
+                break;
+            }
             break;
         //go to position with profile
         case 'p':
@@ -259,17 +299,17 @@ static inline void update_offset(MotorcontrolConfig &motorcontrol_config, int vo
             ts += USEC_STD * 1000;
 
             //get position and velocity
-            if (motorcontrol_config.commutation_sensor == BISS_SENSOR && !isnull(i_biss)) {
-                velocity = i_biss.get_biss_velocity();
-                { count, void, void } = i_biss.get_biss_position();
-            } else if (motorcontrol_config.commutation_sensor == AMS_SENSOR && !isnull(i_ams)) {
-                velocity = i_ams.get_ams_velocity();
-                { count, void } = i_ams.get_ams_position();
-            } else if (motorcontrol_config.commutation_sensor == HALL_SENSOR && !isnull(i_hall)) {
-                count = i_hall.get_hall_position_absolute();
-                velocity = i_hall.get_hall_velocity();
-            }
-            xscope_int(VELOCITY, velocity);
+//            if (motorcontrol_config.commutation_sensor == BISS_SENSOR && !isnull(i_biss)) {
+//                velocity = i_biss.get_biss_velocity();
+//                { count, void, void } = i_biss.get_biss_position();
+//            } else if (motorcontrol_config.commutation_sensor == AMS_SENSOR && !isnull(i_ams)) {
+//                velocity = i_ams.get_ams_velocity();
+//                { count, void } = i_ams.get_ams_position();
+//            } else if (motorcontrol_config.commutation_sensor == HALL_SENSOR && !isnull(i_hall)) {
+//                count = i_hall.get_hall_position_absolute();
+//                velocity = i_hall.get_hall_velocity();
+//            }
+//            xscope_int(VELOCITY, velocity);
 
 //            //torque display
 //            if (motorcontrol_config.commutation_method == FOC) {
@@ -327,17 +367,17 @@ static inline void update_offset(MotorcontrolConfig &motorcontrol_config, int vo
             break;
 
         case i_tuning.set_position_direct(int in_position):
-            if (!isnull(i_position_control)) {
-                if (in_position == 0x7fffffff) {
-                    i_position_control.disable_position_ctrl();
-                } else {
+//            if (!isnull(i_position_control)) {
+//                if (in_position == 0x7fffffff) {
+//                    i_position_control.disable_position_ctrl();
+//                } else {
                     i_position_control.enable_position_ctrl();
                     i_position_control.set_position(in_position);
                     printf("Go to %d\n", in_position);
-                }
-            } else {
-                printf("No position control\n");
-            }
+//                }
+//            } else {
+//                printf("No position control\n");
+//            }
             break;
 
         case i_tuning.set_limit(int in_limit):

@@ -7,8 +7,7 @@
 #include <controllers_lib.h>
 
 
-
-void PID_init(int i1_P, int i1_I, int i1_D, int i1_P_error_limit, int i1_I_error_limit, int i1_itegral_limit, int i1_cmd_limit, int i1_T_s, PIDparam &param )
+void pid_init(int i1_P, int i1_I, int i1_D, int i1_P_error_limit, int i1_I_error_limit, int i1_itegral_limit, int i1_cmd_limit, int i1_T_s, PIDparam &param )
 {
     param.i1_P = i1_P;
     param.i1_I = i1_I;
@@ -22,8 +21,22 @@ void PID_init(int i1_P, int i1_I, int i1_D, int i1_P_error_limit, int i1_I_error
     param.i1_error_integral = 0;
 }
 
+void pid_set_coefficients(int i1_P, int i1_I, int i1_D, PIDparam &param)
+{
+    param.i1_P = i1_P;
+    param.i1_I = i1_I;
+    param.i1_D = i1_D;
+}
 
-int PID_update(int i1_setpoint, int i1_feedback, PIDparam &param)
+void pid_set_limits(int i1_P_error_limit, int i1_I_error_limit, int i1_itegral_limit, int i1_cmd_limit, PIDparam &param)
+{
+    param.i1_P_error_limit = i1_P_error_limit;
+    param.i1_I_error_limit = i1_I_error_limit;
+    param.i1_integral_limit = i1_itegral_limit;
+    param.i1_cmd_limit = i1_cmd_limit;
+}
+
+int pid_update(int i1_setpoint, int i1_feedback, int i1_T_s, PIDparam &param)
 {
     int i1_P_error, i1_I_error, i1_derivative, i2_cmd;
 
@@ -50,6 +63,8 @@ int PID_update(int i1_setpoint, int i1_feedback, PIDparam &param)
     i2_cmd = (param.i1_P * i1_P_error) + (param.i1_I * param.i1_error_integral) - (param.i1_D * i1_derivative);
 
     param.i1_feedback_1n = i1_derivative;
+
+    return i2_cmd;
 }
 
 
