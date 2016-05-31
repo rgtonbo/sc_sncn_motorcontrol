@@ -37,5 +37,4 @@ int auto_tuning_current(interface MotorcontrolInterface client i_commutation, in
 
 [[combinable]]
 void tuning_service(interface TuningInterface server i_tuning, interface MotorcontrolInterface client i_commutation,
-                    interface ADCInterface client ?i_adc, interface PositionControlInterface client ?i_position_control,
-                    interface HallInterface client ?i_hall, interface BISSInterface client ?i_biss, interface AMSInterface client ?i_ams);
+                    interface ADCInterface client ?i_adc, interface PositionControlInterface client ?i_position_control);

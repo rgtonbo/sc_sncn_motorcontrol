@@ -13,8 +13,6 @@
 #include <position_ctrl_service.h>
 #include <a4935.h>
 #include <mc_internal_constants.h>
-#include <hall_service.h>
-#include <qei_service.h>
 #include <filters_lib.h>
 #include <stdio.h>
 
@@ -50,10 +48,6 @@ int position_limit(int position, int max_position_limit, int min_position_limit)
 }
 
 void position_control_service(ControlConfig &position_control_config,
-                              interface HallInterface client ?i_hall,
-                              interface QEIInterface client ?i_qei,
-                              interface BISSInterface client ?i_biss,
-                              interface AMSInterface client ?i_ams,
                               interface MotorcontrolInterface client i_motorcontrol,
                               interface PositionControlInterface server i_position_control[3])
 {
@@ -209,28 +203,6 @@ void position_control_service(ControlConfig &position_control_config,
                         xscope_int(VELOCITY_CMD, int32_velocity_cmd_k);
 //#endif
 
-                break;
-
-            case !isnull(i_hall) => i_hall.notification():
-
-                switch (i_hall.get_notification()) {
-                    case MOTCTRL_NTF_CONFIG_CHANGED:
-                        config_update_flag = 1;
-                        break;
-                    default:
-                        break;
-                }
-                break;
-
-            case !isnull(i_qei) => i_qei.notification():
-
-                switch (i_qei.get_notification()) {
-                    case MOTCTRL_NTF_CONFIG_CHANGED:
-                        config_update_flag = 1;
-                        break;
-                    default:
-                        break;
-                }
                 break;
 
             case i_motorcontrol.notification():

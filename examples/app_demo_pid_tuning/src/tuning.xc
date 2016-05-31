@@ -247,8 +247,7 @@ static inline void update_offset(MotorcontrolConfig &motorcontrol_config, int vo
 
 [[combinable]]
  void tuning_service(interface TuningInterface server i_tuning, interface MotorcontrolInterface client i_commutation,
-                     interface ADCInterface client ?i_adc, interface PositionControlInterface client ?i_position_control,
-                     interface HallInterface client ?i_hall, interface BISSInterface client ?i_biss, interface AMSInterface client ?i_ams)
+                     interface ADCInterface client ?i_adc, interface PositionControlInterface client ?i_position_control)
 {
     timer t;
     unsigned ts;
@@ -273,17 +272,17 @@ static inline void update_offset(MotorcontrolConfig &motorcontrol_config, int vo
     int range_pos, range_neg, step_pos, step_neg;
     int tuning_done_pos, tuning_done_neg;
 
-    if (!isnull(i_position_control)) {
-        /* Initialise the position profile generator */
-        ProfilerConfig profiler_config;
-        profiler_config.polarity = POLARITY;
-        profiler_config.max_position = MAX_POSITION_LIMIT;
-        profiler_config.min_position = MIN_POSITION_LIMIT;
-        profiler_config.max_velocity = MAX_VELOCITY;
-        profiler_config.max_acceleration = MAX_ACCELERATION;
-        profiler_config.max_deceleration = MAX_DECELERATION;
-        init_position_profiler(profiler_config, i_position_control, i_hall, null, i_biss, i_ams);
-    }
+//    if (!isnull(i_position_control)) {
+//        /* Initialise the position profile generator */
+//        ProfilerConfig profiler_config;
+//        profiler_config.polarity = POLARITY;
+//        profiler_config.max_position = MAX_POSITION_LIMIT;
+//        profiler_config.min_position = MIN_POSITION_LIMIT;
+//        profiler_config.max_velocity = MAX_VELOCITY;
+//        profiler_config.max_acceleration = MAX_ACCELERATION;
+//        profiler_config.max_deceleration = MAX_DECELERATION;
+//        init_position_profiler(profiler_config, i_position_control, i_hall, null, i_biss, i_ams);
+//    }
 
 
 //    if (!isnull(i_adc)) {
@@ -381,22 +380,22 @@ static inline void update_offset(MotorcontrolConfig &motorcontrol_config, int vo
             break;
 
         case i_tuning.set_limit(int in_limit):
-            if (motorcontrol_config.commutation_sensor == BISS_SENSOR && !isnull(i_biss)) {
-                i_biss.reset_biss_position(0);
-            } else if (motorcontrol_config.commutation_sensor == AMS_SENSOR && !isnull(i_ams)) {
-                i_ams.reset_ams_position(0);
-            } else if (motorcontrol_config.commutation_sensor == HALL_SENSOR && !isnull(i_hall)) {
-                i_hall.reset_hall_absolute_position(0);
-            }
-            if (in_limit < 0) {
-                position_limit = in_limit;
-                printf("Position limit disabled\n");
-            } else if (in_limit > 0) {
-                printf("Position limited to %d ticks around here\n", in_limit);
-                position_limit = in_limit;
-            } else {
-                printf("Position limited around here\n");
-            }
+//            if (motorcontrol_config.commutation_sensor == BISS_SENSOR && !isnull(i_biss)) {
+//                i_biss.reset_biss_position(0);
+//            } else if (motorcontrol_config.commutation_sensor == AMS_SENSOR && !isnull(i_ams)) {
+//                i_ams.reset_ams_position(0);
+//            } else if (motorcontrol_config.commutation_sensor == HALL_SENSOR && !isnull(i_hall)) {
+//                i_hall.reset_hall_absolute_position(0);
+//            }
+//            if (in_limit < 0) {
+//                position_limit = in_limit;
+//                printf("Position limit disabled\n");
+//            } else if (in_limit > 0) {
+//                printf("Position limited to %d ticks around here\n", in_limit);
+//                position_limit = in_limit;
+//            } else {
+//                printf("Position limited around here\n");
+//            }
             break;
 
         case i_tuning.set_torque(int in_torque):
