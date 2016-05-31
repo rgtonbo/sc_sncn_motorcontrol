@@ -31,7 +31,7 @@ interface TuningInterface {
 };
 
 
-void run_offset_tuning(int input_voltage, interface MotorcontrolInterface client i_commutation, interface TuningInterface client ?i_tuning);
+void run_offset_tuning(int input_voltage, interface MotorcontrolInterface client i_commutation, interface TuningInterface client ?i_tuning, interface PositionControlInterface client ?i_position_control);
 
 int auto_tuning_current(interface MotorcontrolInterface client i_commutation, interface ADCInterface client i_adc, int input_voltage);
 

@@ -19,8 +19,9 @@
 	<!-- Velocity Position Control -->
 	<Probe name="VELOCITY REF" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
 	<Probe name="VELOCITY" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
-	<Probe name="TEMP1" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
-	<Probe name="TEMP2" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>
+	<Probe name="VELOCITY CMD" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
+	<Probe name="TEMP1" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
+	<Probe name="TEMP2" type="CONTINUOUS" datatype="INT" units="Value" enabled="true"/>
 	
 	<!-- Joint Torque and Position Control Loops -->
 	<Probe name="TORQUE SENS" type="CONTINUOUS" datatype="INT" units="Value" enabled="false"/>

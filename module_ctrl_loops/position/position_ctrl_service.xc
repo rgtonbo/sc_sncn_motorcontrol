@@ -137,7 +137,7 @@ void position_control_service(ControlConfig &position_control_config,
     PIDparam velocity_control_pid_param;
     int int16_velocity_k = 0;
     int int16_velocity_ref_k = 0;
-    int int16_velocity_cmd_k = 0;
+    int int32_velocity_cmd_k = 0;
 
     int int16_position_k = 0;
     int int16_position_ref_k = 0;
@@ -171,7 +171,8 @@ void position_control_service(ControlConfig &position_control_config,
 
     t :> ts;
 
-//    void PID_init(/*i1_P*/, int i1_I, int i1_D, int i1_P_error_limit, int i1_I_error_limit, int i1_itegral_limit, int i1_cmd_limit, int i1_T_s, PIDparam &param);
+    pid_init(/*i1_P*/0, /*i1_I*/0, /*i1_D*/0, /*i1_P_error_limit*/0,
+             /*i1_I_error_limit*/0, /*i1_itegral_limit*/0, /*i1_cmd_limit*/0, /*i1_T_s*/1000, velocity_control_pid_param);
 
 
     i_motorcontrol.set_offset_value(2440);
@@ -192,10 +193,10 @@ void position_control_service(ControlConfig &position_control_config,
 
                     int16_velocity_k = i_motorcontrol.get_velocity_actual();
 
-                    int16_velocity_cmd_k = int16_velocity_ref_k;
+                    int32_velocity_cmd_k = pid_update(int16_velocity_ref_k, int16_velocity_k, 1000, velocity_control_pid_param);
                     delay_microseconds(5);
 
-                    i_motorcontrol.set_torque(int16_velocity_cmd_k);
+                    i_motorcontrol.set_torque(int32_velocity_cmd_k);
 //                    delay_microseconds(5);
 //                    position_k = i_motorcontrol.get_position_actual();
 
@@ -205,6 +206,7 @@ void position_control_service(ControlConfig &position_control_config,
 //#ifdef USE_XSCOPE
                         xscope_int(VELOCITY_REF, int16_velocity_ref_k);
                         xscope_int(VELOCITY, int16_velocity_k);
+                        xscope_int(VELOCITY_CMD, int32_velocity_cmd_k);
 //#endif
 
                 break;
@@ -241,13 +243,15 @@ void position_control_service(ControlConfig &position_control_config,
                         break;
                 }
                 break;
-
             case i_position_control[int i].set_position(int in_target_position):
-
                     int16_position_ref_k = in_target_position;
-
                 break;
-
+            case i_position_control[int i].set_velocity_pid_coefficients(unsigned int int8_Kp, unsigned int int8_Ki, unsigned int int8_Kd):
+                pid_set_coefficients(int8_Kp, int8_Ki, int8_Kd, velocity_control_pid_param);
+                break;
+            case i_position_control[int i].set_velocity_pid_limits(int int16_P_error_limit, int int16_I_error_limit, int int16_itegral_limit, int int32_cmd_limit):
+                pid_set_limits(int16_P_error_limit, int16_I_error_limit, int16_itegral_limit, int32_cmd_limit, velocity_control_pid_param);
+                break;
             case i_position_control[int i].set_torque_limit(int in_torque_limit):
 
                 f1_torque_j_lim = in_torque_limit;
