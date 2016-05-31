@@ -51,13 +51,6 @@ int main(void) {
 //        on tile[IFM_TILE]: velocity_client(i_biss[1]);
 //        on tile[IFM_TILE]: tuning_service(i_motorcontrol[1], i_adc[1], i_biss[1]);
         on tile[APP_TILE_2]: tuning_service(i_tuning, i_motorcontrol[1], i_adc[1], i_position_control[0]);
-#if(MOTOR_COMMUTATION_SENSOR == BISS_SENSOR)
-//        on tile[APP_TILE_2]: tuning_service(i_tuning, i_motorcontrol[1], i_adc[1], i_position_control[0], null, i_biss[1], null);
-#elif(MOTOR_COMMUTATION_SENSOR == AMS_SENSOR)
-//        on tile[APP_TILE_2]: tuning_service(i_tuning, i_motorcontrol[1], i_adc[1], i_position_control[0], null, null, i_ams[1]);
-#else
-//        on tile[APP_TILE_2]: tuning_service(i_tuning, i_motorcontrol[1], i_adc[1], i_position_control[0], i_hall[1], null, null);
-#endif
 
         on tile[APP_TILE_2]:
         /* Position Control Loop */
@@ -70,15 +63,7 @@ int main(void) {
             position_control_config.control_loop_period = CONTROL_LOOP_PERIOD; //us
             /* Control Loop */
 #if(MOTOR_COMMUTATION_SENSOR == BISS_SENSOR)
-            position_control_service(position_control_config, i_motorcontrol[3],
-                    i_position_control);
-#elif(MOTOR_COMMUTATION_SENSOR == AMS_SENSOR)
-//            position_control_service(position_control_config, null, null, null, i_ams[2], i_motorcontrol[3],
-//                    i_position_control);
-#else
-//            position_control_service(position_control_config, i_hall[2], null, null, null, i_motorcontrol[3],
-//                    i_position_control);
-#endif
+            position_control_service(position_control_config, i_motorcontrol[3], i_position_control);
         }
 
 
@@ -156,20 +141,9 @@ int main(void) {
                     motorcontrol_config.hall_offset[0] = COMMUTATION_OFFSET_CLK;
                     motorcontrol_config.hall_offset[1] = COMMUTATION_OFFSET_CCLK;
                     motorcontrol_config.commutation_loop_period =  COMMUTATION_LOOP_PERIOD;
-#if(MOTOR_COMMUTATION_SENSOR == BISS_SENSOR)
-                    Motor_Control_Service( fet_driver_ports, motorcontrol_config, c_pwm_ctrl, i_adc[0],
-                            i_shared_memory[0],
-                            i_watchdog[0], null, i_motorcontrol, i_update_pwm);
 
-//                    motorcontrol_service(fet_driver_ports, motorcontrol_config,
-//                                         c_pwm_ctrl, i_adc[0], null, null, i_biss[0], null, i_watchdog[0], null, i_motorcontrol);
-#elif(MOTOR_COMMUTATION_SENSOR == AMS_SENSOR)
-//                    motorcontrol_service(fet_driver_ports, motorcontrol_config,
-//                                         c_pwm_ctrl, i_adc[0], null, null, null, i_ams[0], i_watchdog[0], null, i_motorcontrol);
-#else
-//                    motorcontrol_service(fet_driver_ports, motorcontrol_config,
-//                                         c_pwm_ctrl, i_adc[0], i_hall[0], null, null, null, i_watchdog[0], null, i_motorcontrol);
-#endif
+                    Motor_Control_Service( fet_driver_ports, motorcontrol_config, c_pwm_ctrl, i_adc[0],
+                            i_shared_memory[0], i_watchdog[0], null, i_motorcontrol, i_update_pwm);
                 }
             }
         }

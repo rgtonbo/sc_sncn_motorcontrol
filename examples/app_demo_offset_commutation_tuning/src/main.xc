@@ -11,6 +11,7 @@
 #include <position_feedback_service.h>
 #include <adc_service.h>
 #include <user_config.h>
+#include <torque_control.h>
 #include <tuning.h>
 
 PwmPorts pwm_ports = SOMANET_IFM_PWM_PORTS;
@@ -34,6 +35,7 @@ int main(void) {
     interface BrakeInterface i_brake;
     interface PositionFeedbackInterface i_position_feedback[3];
     interface shared_memory_interface i_shared_memory[2];
+    interface update_pwm i_update_pwm;
 
     par
     {
@@ -72,14 +74,29 @@ int main(void) {
             par
             {
                 /* Triggered PWM Service */
-                pwm_triggered_service(pwm_ports, c_adctrig, c_pwm_ctrl, i_brake);
-                i_brake.set_brake(0);
+                {
+                    pwm_triggered_service(pwm_ports, c_adctrig, c_pwm_ctrl, i_brake);
+
+//                    pwm_config(pwm_ports);
+//                    //pwm_check(pwm_ports);//checks if pulses can be generated on pwm ports or not
+//                    delay_milliseconds(1000);
+//                    pwm_service_task(_MOTOR_ID, pwm_ports, i_update_pwm);
+                }
+                //brake
+//                i_brake.set_brake(0);
 
                 /* ADC Service */
-                adc_service(adc_ports, c_adctrig, i_adc, i_watchdog[1]);
+                {
+                    adc_service(adc_ports, c_adctrig, i_adc, i_watchdog[1]);
+//                    delay_milliseconds(1500);
+//                    adc_service(adc_ports, null/*c_trigger*/, i_adc /*ADCInterface*/, i_watchdog[1]);
+                }
 
                 /* Watchdog Service */
-                watchdog_service(wd_ports, i_watchdog);
+                {
+                    delay_milliseconds(500);
+                    watchdog_service(wd_ports, i_watchdog);
+                }
 
                 /* Position service */
                 {
@@ -131,6 +148,9 @@ int main(void) {
                     motorcontrol_config.commutation_loop_period =  COMMUTATION_LOOP_PERIOD;
                     motorcontrol_service(fet_driver_ports, motorcontrol_config,
                                          c_pwm_ctrl, i_adc[0], i_shared_memory[0], i_watchdog[0], null, i_motorcontrol);
+
+//                    Motor_Control_Service( fet_driver_ports, motorcontrol_config, c_pwm_ctrl, i_adc[0],
+//                                                i_shared_memory[0], i_watchdog[0], null, i_motorcontrol, i_update_pwm);
                 }
             }
         }
