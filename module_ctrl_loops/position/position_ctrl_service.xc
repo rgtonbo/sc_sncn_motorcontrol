@@ -171,10 +171,10 @@ void position_velocity_control_service(PosVelocityControlConfig &pos_velocity_ct
                 int13_torque_ref = int23_torque_ref_in;
 
                 if (open_brake_counter > 0) {
-                    if (open_brake_counter > 100) {
-                        int23_position_ref_k_in = open_brake_pos + 600;
+                    if (open_brake_counter > 400) {
+                        int23_position_ref_k_in = open_brake_pos + 900;
                     } else if (open_brake_counter > 1) {
-                        int23_position_ref_k_in = open_brake_pos - 600;
+                        int23_position_ref_k_in = open_brake_pos - 900;
                     } else {
                         int23_position_ref_k_in = open_brake_pos;
                     }
@@ -318,7 +318,7 @@ void position_velocity_control_service(PosVelocityControlConfig &pos_velocity_ct
                     int25_position_k_sens = upstream_control_data.position;
                     int23_position_k_sens = int25_position_k_sens / 4;
                     //open brake shake
-                    open_brake_counter = 200;
+                    open_brake_counter = 800;
                     open_brake_pos = int23_position_k_sens;
                     /******/
                     int23_position_ref_k_in = int23_position_k_sens;
