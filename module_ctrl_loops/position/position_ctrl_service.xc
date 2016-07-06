@@ -102,8 +102,7 @@ void position_velocity_control_service(PosVelocityControlConfig &pos_velocity_ct
     int int23_torque_ref_in = 0;
     int int13_torque_ref = 0;
 
-    int open_brake = 0;
-    int pos_ref_orig = 0;
+    int open_brake_counter = 0;
 
     //temp
 //    int temp = 0;
@@ -170,16 +169,16 @@ void position_velocity_control_service(PosVelocityControlConfig &pos_velocity_ct
 
                 int13_torque_ref = int23_torque_ref_in;
 
-                if (open_brake > 0) {
-                    switch(open_brake) {
-                    case 25:
-                        int23_position_ref_k_in = pos_ref_orig - 50;
+                if (open_brake_counter > 0) {
+                    switch(open_brake_counter) {
+                    case 50:
+                        int23_position_ref_k_in -= 200;
                         break;
                     case 1:
-                        int23_position_ref_k_in = pos_ref_orig;
+                        int23_position_ref_k_in += 100;
                         break;
                     }
-                    open_brake--;
+                    open_brake_counter--;
                 }
 
 
@@ -272,6 +271,10 @@ void position_velocity_control_service(PosVelocityControlConfig &pos_velocity_ct
                         int13_torque_ref = pos_velocity_ctrl_config.int21_max_torque;
                     else if (int13_torque_ref < (-pos_velocity_ctrl_config.int21_max_torque))
                         int13_torque_ref = (-pos_velocity_ctrl_config.int21_max_torque);
+                    //minimum torque output
+                    if ((int13_torque_ref / 1024) < 60 && (int13_torque_ref / 1024) > -60) {
+                        int13_torque_ref = 0;
+                    }
                     i_motorcontrol.set_torque(int13_torque_ref / 1024);
                 }
 
@@ -314,10 +317,9 @@ void position_velocity_control_service(PosVelocityControlConfig &pos_velocity_ct
                     upstream_control_data = i_motorcontrol.update_upstream_control_data();
                     int25_position_k_sens = upstream_control_data.position;
                     int23_position_k_sens = int25_position_k_sens / 4;
-//                    pos_ref_orig = int23_position_k_sens;
-//                    int23_position_ref_k_in = pos_ref_orig + 50;
-//                    open_brake = 50;
-                    int23_position_ref_k_in = int23_position_k_sens;
+                    open_brake_counter = 100;
+                    int23_position_ref_k_in = int23_position_k_sens + 100;
+//                    int23_position_ref_k_in = int23_position_k_sens;
                     flt23_position_ref_k = int23_position_ref_k_in;
                     flt23_position_ref_k_1n = int23_position_ref_k_in;
                     flt23_position_ref_k_2n = int23_position_ref_k_in;
