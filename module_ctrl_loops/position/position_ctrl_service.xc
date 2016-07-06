@@ -103,6 +103,7 @@ void position_velocity_control_service(PosVelocityControlConfig &pos_velocity_ct
     int int13_torque_ref = 0;
 
     int open_brake_counter = 0;
+    int open_brake_pos = 0;
 
     //temp
 //    int temp = 0;
@@ -170,13 +171,12 @@ void position_velocity_control_service(PosVelocityControlConfig &pos_velocity_ct
                 int13_torque_ref = int23_torque_ref_in;
 
                 if (open_brake_counter > 0) {
-                    switch(open_brake_counter) {
-                    case 50:
-                        int23_position_ref_k_in -= 200;
-                        break;
-                    case 1:
-                        int23_position_ref_k_in += 100;
-                        break;
+                    if (open_brake_counter > 100) {
+                        int23_position_ref_k_in = open_brake_pos + 600;
+                    } else if (open_brake_counter > 1) {
+                        int23_position_ref_k_in = open_brake_pos - 600;
+                    } else {
+                        int23_position_ref_k_in = open_brake_pos;
                     }
                     open_brake_counter--;
                 }
@@ -272,9 +272,9 @@ void position_velocity_control_service(PosVelocityControlConfig &pos_velocity_ct
                     else if (int13_torque_ref < (-pos_velocity_ctrl_config.int21_max_torque))
                         int13_torque_ref = (-pos_velocity_ctrl_config.int21_max_torque);
                     //minimum torque output
-                    if ((int13_torque_ref / 1024) < 60 && (int13_torque_ref / 1024) > -60) {
-                        int13_torque_ref = 0;
-                    }
+//                    if ((int13_torque_ref / 1024) < 60 && (int13_torque_ref / 1024) > -60) {
+//                        int13_torque_ref = 0;
+//                    }
                     i_motorcontrol.set_torque(int13_torque_ref / 1024);
                 }
 
@@ -317,9 +317,11 @@ void position_velocity_control_service(PosVelocityControlConfig &pos_velocity_ct
                     upstream_control_data = i_motorcontrol.update_upstream_control_data();
                     int25_position_k_sens = upstream_control_data.position;
                     int23_position_k_sens = int25_position_k_sens / 4;
-                    open_brake_counter = 100;
-                    int23_position_ref_k_in = int23_position_k_sens + 100;
-//                    int23_position_ref_k_in = int23_position_k_sens;
+                    //open brake shake
+                    open_brake_counter = 200;
+                    open_brake_pos = int23_position_k_sens;
+                    /******/
+                    int23_position_ref_k_in = int23_position_k_sens;
                     flt23_position_ref_k = int23_position_ref_k_in;
                     flt23_position_ref_k_1n = int23_position_ref_k_in;
                     flt23_position_ref_k_2n = int23_position_ref_k_in;
